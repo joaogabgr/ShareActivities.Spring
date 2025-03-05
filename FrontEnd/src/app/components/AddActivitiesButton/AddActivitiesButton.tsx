@@ -8,7 +8,7 @@ export default function AddActivitiesButton() {
     const router = useRouter();
 
     const handlePress = () => {
-        router.push('/pages/Activities/FormAddActivities/FormAddActivities');
+        router.push('/pages/FormAddActivities/FormAddActivities');
     }
     return (
         <TouchableOpacity style={styles.container} onPress={handlePress}>
