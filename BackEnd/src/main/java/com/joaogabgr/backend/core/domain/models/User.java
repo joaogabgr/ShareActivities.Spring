@@ -1,5 +1,6 @@
 package com.joaogabgr.backend.core.domain.models;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.google.gson.Gson;
 import com.joaogabgr.backend.core.domain.enums.UsersRoles;
 import jakarta.persistence.*;
@@ -31,12 +32,20 @@ public class User implements UserDetails {
     @Column(unique = true, nullable = false)
     private String email;
 
+    @JsonIgnore
     @Column(nullable = false)
     private String password;
 
-    @Column(nullable = false)
     @Enumerated(EnumType.STRING)
     private UsersRoles role;
+
+    @JsonIgnore
+    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<FamiliesUsers> familiesUsers;
+
+    @JsonIgnore
+    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<Activities> activities;
 
     public User(String name, String email, String cpf, String password, UsersRoles role) {
         this.name = name;
@@ -46,6 +55,7 @@ public class User implements UserDetails {
         this.role = role;
     }
 
+    @JsonIgnore
     public String getPayload() {
         String name = getUsername();
         String role = getRole().toString();
@@ -54,36 +64,43 @@ public class User implements UserDetails {
         return String.format(gson.toJson(payload));
     }
 
+    @JsonIgnore
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
         return List.of();
     }
 
+    @JsonIgnore
     @Override
     public String getPassword() {
         return password;
     }
 
+    @JsonIgnore
     @Override
     public String getUsername() {
         return email;
     }
 
+    @JsonIgnore
     @Override
     public boolean isAccountNonExpired() {
         return UserDetails.super.isAccountNonExpired();
     }
 
+    @JsonIgnore
     @Override
     public boolean isAccountNonLocked() {
         return UserDetails.super.isAccountNonLocked();
     }
 
+    @JsonIgnore
     @Override
     public boolean isCredentialsNonExpired() {
         return UserDetails.super.isCredentialsNonExpired();
     }
 
+    @JsonIgnore
     @Override
     public boolean isEnabled() {
         return UserDetails.super.isEnabled();
