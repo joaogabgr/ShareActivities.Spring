@@ -1,6 +1,7 @@
 package com.joaogabgr.backend.application.services.activities;
 
 import com.joaogabgr.backend.application.operations.activities.ConvertActivitiesToReadDTO;
+import com.joaogabgr.backend.application.operations.families.FindFamily;
 import com.joaogabgr.backend.application.operations.user.FindUser;
 import com.joaogabgr.backend.core.domain.models.Activities;
 import com.joaogabgr.backend.core.useCase.activities.CreateActivitiesUseCase;
@@ -22,6 +23,8 @@ public class CreateActivitiesImpl implements CreateActivitiesUseCase {
 
     @Autowired
     private ConvertActivitiesToReadDTO convertActivitiesToReadDTO;
+    @Autowired
+    private FindFamily findFamily;
 
     @Override
     public ReadActivitiesDTO execute(CreateActivitiesDTO createActivitiesDTO) throws SystemContextException {
@@ -32,6 +35,8 @@ public class CreateActivitiesImpl implements CreateActivitiesUseCase {
 
             Activities activities = createActivitiesDTO.toEntity();
             activities.setUser(findUser.execute(createActivitiesDTO.getUserId()));
+
+            activities.setFamily(findFamily.execute(createActivitiesDTO.getFamilyId()));
 
             activitiesRepository.save(activities);
 

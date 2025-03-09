@@ -5,4 +5,5 @@ import org.springframework.data.jpa.repository.JpaRepository;
 
 public interface FamiliesUsersRepository extends JpaRepository<FamiliesUsers, String> {
     boolean existsByUserEmail(String userEmail);
+    FamiliesUsers findByUserEmail(String userEmail);
 }

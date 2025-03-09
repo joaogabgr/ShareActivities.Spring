@@ -16,6 +16,7 @@ public class CreateActivitiesDTO implements DTO {
     private String description;
     private String status;
     private String userId;
+    private String familyId;
 
     @Override
     public Activities toEntity() {
