@@ -13,7 +13,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 @RestController
 @RequestMapping("/families")
-public class CreateFamiliescontroller {
+public class CreateFamiliesController {
     @Autowired
     private CreateFamiliesImpl createFamiliesImpl;
 

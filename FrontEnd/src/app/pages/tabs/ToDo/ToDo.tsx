@@ -30,6 +30,32 @@ export default function ToDo() {
     const router = useRouter();
     const params = useLocalSearchParams();
 
+    useEffect(() => {
+        const checkUser = async () => {
+            const response = await links.checkUserHaveFamily(authContext.user?.name || '');
+            if (response.data.model === false) {
+                Alert.alert(
+                    "Família não encontrada",
+                    "Você não possui uma família cadastrada. Deseja criar uma agora?",
+                    [
+                        {
+                            text: "Cancelar",
+                            onPress: () => router.replace("/pages/Default"),
+                            style: "default"
+                        },
+                        {
+                            text: "Criar",
+                            onPress: () => router.push("/pages/Family/FormAddFamily/FormAddFamily"),
+                            style: "default"
+                        }
+                    ]
+                )
+            }
+        }
+
+        checkUser();
+    } , []);
+
     const ReadActivities = useCallback(async () => {
         setLoading(true);
         try {
@@ -114,7 +140,7 @@ export default function ToDo() {
 
         return (
             <View style={styles.section}>
-                <TouchableOpacity 
+                <TouchableOpacity
                     style={styles.sectionHeader}
                     onPress={() => toggleSection(status as SectionStatus)}
                 >
@@ -122,7 +148,7 @@ export default function ToDo() {
                         <Text style={styles.sectionTitle}>{title}</Text>
                         <Text style={styles.countBadge}>({statusActivities.length})</Text>
                     </View>
-                    <FontAwesomeIcon 
+                    <FontAwesomeIcon
                         icon={expandedSections[status as SectionStatus] ? faChevronUp : faChevronDown}
                         color={colors.white}
                         size={16}
@@ -177,8 +203,8 @@ const styles = StyleSheet.create({
         flex: 1,
     },
     section: {
-        paddingLeft: padding*2,
-        paddingRight: padding*2,
+        paddingLeft: padding * 2,
+        paddingRight: padding * 2,
     },
     sectionHeader: {
         flexDirection: 'row',

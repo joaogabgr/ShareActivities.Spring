@@ -1,4 +1,4 @@
-package com.joaogabgr.backend.web.controllers.UserControllers;
+package com.joaogabgr.backend.web.controllers.FamiliesController;
 
 import com.joaogabgr.backend.application.services.user.CheckUserHaveFamilyImpl;
 import com.joaogabgr.backend.web.dto.web.ResponseModelDTO;
@@ -11,7 +11,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
-@RequestMapping("/user")
+@RequestMapping("/families")
 public class CheckUserHaveFamily {
 
     @Autowired
