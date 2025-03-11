@@ -31,22 +31,43 @@ ShareActivities é uma aplicação moderna para gerenciamento de tarefas familia
 
 ## 🔄 Sprints e Entregas
 
-### Sprint 1 - Autenticação e Funcionalidades Básicas
-- Implementação do JWT
-- CRUD básico de tarefas (Criar, Ler, Deletar)
-- Setup inicial da arquitetura
+### Sprint 1 - MVP Básico (31/03/2025)
+- Implementação do JWT e autenticação
+- CRUD básico de tarefas
+  - Criação de tarefas com tipo (Limpeza, Compras, Reparos)
+  - Definição de prazos
+  - Marcação de status (concluída/em andamento/pendente)
+  - Tempo estimado para conclusão
+- Interface básica e intuitiva
+- Visualização de tarefas pendentes
+- Histórico de tarefas realizadas
+- Sistema de prioridades
+- Alertas e lembretes básicos
 
-### Sprint 2 - Gerenciamento Familiar
-- Implementação da edição de tarefas
-- Sistema de gerenciamento familiar
-- Visualização de tarefas familiares
-- Melhorias na interface do usuário
+### Sprint 2 - Funcionalidades de Compartilhamento (28/04/2025)
+- Sistema de grupos e compartilhamento
+  - Criação de grupos de usuários
+  - Compartilhamento de tarefas entre membros
+  - Edição de tarefas compartilhadas
+- Sistema de notificações avançado
+  - Notificações de novas tarefas
+  - Notificações de tarefas pendentes
+  - Validação de conclusão entre membros
+- Recursos de mídia
+  - Upload de fotos e vídeos
+  - Compartilhamento de documentos e links
+- Relatórios básicos de progresso
+- Integração com GPS para localização de tarefas
 
-### Sprint 3 - Recursos Avançados
-- Sistema de notificações
-- CRUD completo de receitas
-- Melhorias gerais na usabilidade
-- Otimizações de performance
+### Sprint 3 - Recursos Avançados (26/05/2025)
+- Sistema de comunicação
+  - Chat entre membros do grupo
+- Recursos avançados de produtividade
+  - Integração com outros aplicativos
+  - Comandos de voz para criação de tarefas
+- Relatórios avançados
+  - Análise de produtividade
+  - Métricas de conclusão
 
 ## 💡 Boas Práticas Implementadas
 
