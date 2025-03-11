@@ -7,4 +7,7 @@ export type ReadActivities = {
     status: string;
     userName: string;
     date: string;
+    priority: string;
+    type: string;
+    dateExpire: string;
 };

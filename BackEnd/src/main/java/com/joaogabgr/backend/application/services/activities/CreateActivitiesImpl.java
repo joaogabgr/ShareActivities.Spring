@@ -33,10 +33,14 @@ public class CreateActivitiesImpl implements CreateActivitiesUseCase {
                 throw new SystemContextException("Invalid data");
             };
 
+            System.out.println(createActivitiesDTO);
+
             Activities activities = createActivitiesDTO.toEntity();
             activities.setUser(findUser.execute(createActivitiesDTO.getUserId()));
 
-            activities.setFamily(findFamily.execute(createActivitiesDTO.getFamilyId()));
+            if (createActivitiesDTO.getFamilyId() != null) {
+                activities.setFamily(findFamily.execute(createActivitiesDTO.getFamilyId()));
+            }
 
             activitiesRepository.save(activities);
 

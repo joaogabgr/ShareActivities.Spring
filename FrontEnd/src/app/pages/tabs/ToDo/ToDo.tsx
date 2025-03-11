@@ -30,31 +30,31 @@ export default function ToDo() {
     const router = useRouter();
     const params = useLocalSearchParams();
 
-    useEffect(() => {
-        const checkUser = async () => {
-            const response = await links.checkUserHaveFamily(authContext.user?.name || '');
-            if (response.data.model === false) {
-                Alert.alert(
-                    "Família não encontrada",
-                    "Você não possui uma família cadastrada. Deseja criar uma agora?",
-                    [
-                        {
-                            text: "Cancelar",
-                            onPress: () => router.replace("/pages/Default"),
-                            style: "default"
-                        },
-                        {
-                            text: "Criar",
-                            onPress: () => router.push("/pages/Family/FormAddFamily/FormAddFamily"),
-                            style: "default"
-                        }
-                    ]
-                )
-            }
-        }
+    // useEffect(() => {
+    //     const checkUser = async () => {
+    //         const response = await links.checkUserHaveFamily(authContext.user?.name || '');
+    //         if (response.data.model === false) {
+    //             Alert.alert(
+    //                 "Família não encontrada",
+    //                 "Você não possui uma família cadastrada. Deseja criar uma agora?",
+    //                 [
+    //                     {
+    //                         text: "Cancelar",
+    //                         onPress: () => router.replace("/pages/Default"),
+    //                         style: "default"
+    //                     },
+    //                     {
+    //                         text: "Criar",
+    //                         onPress: () => router.push("/pages/Family/FormAddFamily/FormAddFamily"),
+    //                         style: "default"
+    //                     }
+    //                 ]
+    //             )
+    //         }
+    //     }
 
-        checkUser();
-    } , []);
+    //     checkUser();
+    // } , []);
 
     const ReadActivities = useCallback(async () => {
         setLoading(true);
@@ -80,6 +80,11 @@ export default function ToDo() {
     };
 
     const handleDelete = async (id: string) => {
+        if (!authContext.isAuthenticated) {
+            router.replace('/pages/auth/Login');
+            return;
+        }
+
         Alert.alert(
             "Confirmar exclusão",
             "Tem certeza que deseja excluir esta atividade?",
@@ -105,6 +110,11 @@ export default function ToDo() {
     };
 
     const handleEdit = (id: string) => {
+        if (!authContext.isAuthenticated) {
+            router.replace('/pages/auth/Login');
+            return;
+        }
+
         Alert.alert(
             "Confirmar edição",
             "Tem certeza que deseja editar esta atividade?",
@@ -131,7 +141,14 @@ export default function ToDo() {
     }
 
     const getActivitiesByStatus = (status: string) => {
-        return activities.filter(activity => activity.status === status);
+        const statusActivities = activities.filter(activity => activity.status === status);
+        
+        // Ordenar por prioridade (HIGH > MEDIUM > LOW)
+        return statusActivities.sort((a, b) => {
+            const priorityOrder = { HIGH: 3, MEDIUM: 2, LOW: 1 };
+            return (priorityOrder[b.priority as keyof typeof priorityOrder] || 0) - 
+                   (priorityOrder[a.priority as keyof typeof priorityOrder] || 0);
+        });
     };
 
     const renderStatusSection = (status: string, title: string) => {
@@ -172,8 +189,10 @@ export default function ToDo() {
     };
 
     useEffect(() => {
-        ReadActivities();
-    }, [ReadActivities, params.refresh]);
+        if (authContext.isAuthenticated) {
+            ReadActivities();
+        }
+    }, [ReadActivities, params.refresh, authContext.isAuthenticated]);
 
     return (
         <SafeAreaView style={styles.container}>

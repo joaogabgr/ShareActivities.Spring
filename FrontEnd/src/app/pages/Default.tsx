@@ -14,7 +14,6 @@ export default function Default() {
       <View style={styles.modelsContainer}>
         <Models icon={faPeopleGroup} title="Minha Familia" color="#008000" onPress='/pages/tabs/MyFamily/MyFamily' />
         <Models icon={faList} title="Tarefas a fazer" color="#00FFFF" onPress="/pages/tabs/ToDo/ToDo"/>
-        <Models icon={faUtensils} title="Receitas" color="#AAFF00" onPress='/pages/tabs/Receitas/Receitas'/>
       </View>
     </SafeAreaView>
   );

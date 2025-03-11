@@ -1,6 +1,7 @@
 package com.joaogabgr.backend.core.domain.models;
 
 import com.joaogabgr.backend.core.domain.enums.ActivitiesStatus;
+import com.joaogabgr.backend.core.domain.enums.PriorityActivities;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -19,10 +20,15 @@ public class Activities {
 
     private String name;
     private String description;
-    private LocalDateTime date;
+    private String type;
+    private LocalDateTime dateCreated;
+    private LocalDateTime dateExpire;
 
     @Enumerated(EnumType.STRING)
     private ActivitiesStatus status;
+
+    @Enumerated(EnumType.STRING)
+    private PriorityActivities priority;
 
     @ManyToOne
     @JoinColumn(name = "user_id")

@@ -13,7 +13,15 @@ public class ConvertActivitiesToReadDTO {
         readActivitiesDTO.setDescription(activities.getDescription());
         readActivitiesDTO.setStatus(String.valueOf(activities.getStatus()));
         readActivitiesDTO.setUserName(activities.getUser().getName());
-        readActivitiesDTO.setDate(activities.getDate().toString());
+        readActivitiesDTO.setDate(activities.getDateCreated().toString());
+        readActivitiesDTO.setPriority(String.valueOf(activities.getPriority()));
+        if (activities.getFamily() != null) {
+            readActivitiesDTO.setFamilyName(activities.getFamily().getName());
+        }
+        readActivitiesDTO.setType(activities.getType());
+        if (activities.getDateExpire() != null) {
+            readActivitiesDTO.setDateExpire(activities.getDateExpire().toString());
+        }
         return readActivitiesDTO;
     }
 }

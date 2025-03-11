@@ -38,11 +38,11 @@ ShareActivities é uma aplicação moderna para gerenciamento de tarefas familia
   - Definição de prazos
   - Marcação de status (concluída/em andamento/pendente)
   - Tempo estimado para conclusão
+  - Sistema de prioridades
 - Interface básica e intuitiva
 - Visualização de tarefas pendentes
 - Histórico de tarefas realizadas
-- Sistema de prioridades
-- Alertas e lembretes básicos
+- lembretes básicos
 
 ### Sprint 2 - Funcionalidades de Compartilhamento (28/04/2025)
 - Sistema de grupos e compartilhamento

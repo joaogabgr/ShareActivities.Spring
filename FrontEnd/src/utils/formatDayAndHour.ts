@@ -9,3 +9,19 @@ export const formatDayAndHour = (date: string | Date): string => {
 
     return `Criado no dia ${day}/${month}/${year} as ${hours}:${minutes}`;
 };
+
+export const expireDate = (date: string | Date): string => {
+    const dateObject = typeof date === 'string' ? new Date(date) : date;
+
+    // Ajusta o fuso horário subtraindo 3 horas
+    const adjustedDate = new Date(dateObject.getTime() - 3 * 60 * 60 * 1000);
+
+    const day = adjustedDate.getDate().toString().padStart(2, '0');
+    const month = (adjustedDate.getMonth() + 1).toString().padStart(2, '0');
+    const year = adjustedDate.getFullYear();
+
+    const hours = adjustedDate.getHours().toString().padStart(2, '0');
+    const minutes = adjustedDate.getMinutes().toString().padStart(2, '0');
+
+    return `Expira no dia ${day}/${month}/${year} as ${hours}:${minutes}`;
+};

@@ -1,13 +1,13 @@
 import { links } from "@/src/api/api";
 import { ErrorAlertComponent } from "@/src/app/components/Alerts/AlertComponent";
 import Header from "@/src/app/components/header/Header";
+import KeyboardAvoidingContainer from "@/src/app/components/KeyboardAvoidingContainer/KeyboardAvoidingContainer";
 import { AuthContext } from "@/src/contexts/AuthContext";
 import { borderRadius, colors, margin, padding } from "@/src/globalCSS";
 import { CreateFamilyDTO } from "@/src/types/Family/CreateFamilyDTO";
 import { useRouter } from "expo-router";
 import { useContext, useState } from "react";
 import { SafeAreaView, StyleSheet, Text, TextInput, TouchableOpacity, View } from "react-native";
-import { ScrollView } from "react-native-gesture-handler";
 
 export default function FormAddFamily() {
     const [name, setName] = useState('')
@@ -31,7 +31,7 @@ export default function FormAddFamily() {
     return (
         <SafeAreaView style={styles.container}>
             <Header />
-            <ScrollView style={styles.scrollView}>
+            <KeyboardAvoidingContainer>
                 <View style={styles.formContainer}>
                     <Text style={styles.label}>Nome da Familia</Text>
                     <TextInput
@@ -46,7 +46,7 @@ export default function FormAddFamily() {
                         <Text style={styles.buttonText}>Salvar Atividade</Text>
                     </TouchableOpacity>
                 </View>
-            </ScrollView>
+            </KeyboardAvoidingContainer>
         </SafeAreaView>
     );
 }
@@ -55,9 +55,6 @@ const styles = StyleSheet.create({
     container: {
         flex: 1,
         backgroundColor: colors.gray,
-    },
-    scrollView: {
-        flex: 1,
     },
     formContainer: {
         padding: padding,

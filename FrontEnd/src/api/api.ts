@@ -4,7 +4,7 @@ import { UpdateActivities } from "../types/Activities/UpdateActivities";
 import { CreateFamilyDTO } from "../types/Family/CreateFamilyDTO";
 
 export const api = axios.create({
-    baseURL: "http://172.20.10.9:8080",
+    baseURL: "http:/192.168.1.103:8080",
 });
 
 export const links = {

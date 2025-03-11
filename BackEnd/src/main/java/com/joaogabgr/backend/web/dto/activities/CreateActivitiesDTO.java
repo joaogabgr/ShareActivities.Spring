@@ -1,6 +1,7 @@
 package com.joaogabgr.backend.web.dto.activities;
 
 import com.joaogabgr.backend.core.domain.enums.ActivitiesStatus;
+import com.joaogabgr.backend.core.domain.enums.PriorityActivities;
 import com.joaogabgr.backend.core.domain.models.Activities;
 import com.joaogabgr.backend.web.dto.DTO;
 import lombok.Data;
@@ -15,8 +16,11 @@ public class CreateActivitiesDTO implements DTO {
     private String name;
     private String description;
     private String status;
+    private String priority;
     private String userId;
     private String familyId;
+    private String type;
+    private LocalDateTime dateExpire;
 
     @Override
     public Activities toEntity() {
@@ -24,12 +28,16 @@ public class CreateActivitiesDTO implements DTO {
         activities.setName(name);
         activities.setDescription(description);
         activities.setStatus(ActivitiesStatus.valueOf(status));
-        activities.setDate(LocalDateTime.now());
+        activities.setDateCreated(LocalDateTime.now());
+        activities.setDateExpire(dateExpire);
+        activities.setType(type);
+        activities.setPriority(PriorityActivities.valueOf(priority));
         return activities;
     }
 
     @Override
     public boolean isValid() {
-        return isNotNullOrEmpty(name) || isNotNullOrEmpty(description) || isNotNullOrEmpty(status) || isNotNullOrEmpty(userId);
+        return isNotNullOrEmpty(name) || isNotNullOrEmpty(description) || isNotNullOrEmpty(status) || isNotNullOrEmpty(userId) ||
+                isNotNullOrEmpty(type) || isNotNullOrEmpty(priority);
     }
 }
