@@ -23,6 +23,7 @@ public class Activities {
     private String type;
     private LocalDateTime dateCreated;
     private LocalDateTime dateExpire;
+    private LocalDateTime dayForRecover;
 
     @Enumerated(EnumType.STRING)
     private ActivitiesStatus status;
@@ -38,4 +39,3 @@ public class Activities {
     @JoinColumn(name = "family_id")
     private Families family;
 }
-

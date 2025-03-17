@@ -16,4 +16,5 @@ public class ReadActivitiesDTO {
     private String familyName;
     private String type;
     private String dateExpire;
+    private String dayForRecover;
 }

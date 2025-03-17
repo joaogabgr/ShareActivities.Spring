@@ -21,6 +21,7 @@ public class CreateActivitiesDTO implements DTO {
     private String familyId;
     private String type;
     private LocalDateTime dateExpire;
+    private Integer daysForRecover;
 
     @Override
     public Activities toEntity() {

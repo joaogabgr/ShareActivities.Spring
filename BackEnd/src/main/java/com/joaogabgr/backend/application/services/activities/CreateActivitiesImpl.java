@@ -12,6 +12,8 @@ import com.joaogabgr.backend.web.exeption.SystemContextException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.util.Objects;
+
 @Service
 public class CreateActivitiesImpl implements CreateActivitiesUseCase {
 
@@ -33,13 +35,15 @@ public class CreateActivitiesImpl implements CreateActivitiesUseCase {
                 throw new SystemContextException("Invalid data");
             };
 
-            System.out.println(createActivitiesDTO);
-
             Activities activities = createActivitiesDTO.toEntity();
             activities.setUser(findUser.execute(createActivitiesDTO.getUserId()));
 
-            if (createActivitiesDTO.getFamilyId() != null) {
+            if (!Objects.equals(createActivitiesDTO.getFamilyId(), "")) {
                 activities.setFamily(findFamily.execute(createActivitiesDTO.getFamilyId()));
+            }
+
+            if (createActivitiesDTO.getDaysForRecover() != 0) {
+                activities.setDayForRecover(activities.getDateCreated().plusDays(createActivitiesDTO.getDaysForRecover()));
             }
 
             activitiesRepository.save(activities);

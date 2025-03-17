@@ -22,6 +22,9 @@ public class ConvertActivitiesToReadDTO {
         if (activities.getDateExpire() != null) {
             readActivitiesDTO.setDateExpire(activities.getDateExpire().toString());
         }
+        if (activities.getDayForRecover() != null) {
+            readActivitiesDTO.setDayForRecover(activities.getDayForRecover().toString());
+        }
         return readActivitiesDTO;
     }
 }
