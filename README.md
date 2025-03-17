@@ -32,42 +32,48 @@ ShareActivities é uma aplicação moderna para gerenciamento de tarefas familia
 ## 🔄 Sprints e Entregas
 
 ### Sprint 1 - MVP Básico (31/03/2025)
-- Implementação do JWT e autenticação
-- CRUD básico de tarefas
-  - Criação de tarefas com tipo (Limpeza, Compras, Reparos)
-  - Definição de prazos
-  - Marcação de status (concluída/em andamento/pendente)
-  - Tempo estimado para conclusão
-  - Sistema de prioridades
-- Interface básica e intuitiva
-- Visualização de tarefas pendentes
-- Histórico de tarefas realizadas
-- lembretes básicos
+- **Sistema de Autenticação e Gerenciamento Básico de Tarefas**
+  - Implementação completa do sistema de autenticação JWT com credenciais seguras
+  - CRUD completo de tarefas pessoais:
+    - Criação intuitiva de tarefas com categorização por tipo (Limpeza, Compras, Reparos)
+    - Definição flexível de prazos e configuração da frequência de repetição das tarefas
+    - Sistema avançado de status (concluída/em andamento/pendente) com transições visuais
+    - Configuração de tempo estimado para conclusão
+    - Sistema de prioridades com codificação visual (alta, média, baixa)
+  - Interface minimalista e intuitiva com design centrado no usuário
+  - tela para visualização rápida de tarefas pendentes
+  - Histórico detalhado de tarefas realizadas
+  - Sistema de lembrete com niveis de urgencia baseado na data de expirar a tarefa
 
-### Sprint 2 - Funcionalidades de Compartilhamento (28/04/2025)
-- Sistema de grupos e compartilhamento
-  - Criação de grupos de usuários
-  - Compartilhamento de tarefas entre membros
-  - Edição de tarefas compartilhadas
-- Sistema de notificações avançado
-  - Notificações de novas tarefas
-  - Notificações de tarefas pendentes
-  - Validação de conclusão entre membros
-- Recursos de mídia
-  - Upload de fotos e vídeos
-  - Compartilhamento de documentos e links
-- Relatórios básicos de progresso
-- Integração com GPS para localização de tarefas
+### Sprint 2 - Ecossistema Colaborativo (28/04/2025)
+- **Compartilhamento e Interação Social**
+  - Sistema robusto de grupos e compartilhamento:
+    - Criação e gerenciamento de grupos familiares
+    - Compartilhamento de tarefas entre membros
+    - Edição colaborativa de tarefas compartilhadas
+  - Central de notificações avançada:
+    - Notificação para novas tarefas atribuídas
+    - Notificação para tarefas pendentes próximas do vencimento
+    - Notificação para tarefas que forem concluidas
+  - Recursos multimídia completos:
+    - Captura e upload direto de fotos como referência para execução de tarefas
+    - Biblioteca compartilhada para anexos visuais com visualização otimizada
+    - Sistema seguro para compartilhamento de documentos e links relevantes às tarefas
+  - Integração com GPS para notificações baseadas em localização:
+    - Alertas inteligentes quando próximo a locais relacionados às tarefas pendentes
 
 ### Sprint 3 - Recursos Avançados (26/05/2025)
-- Sistema de comunicação
-  - Chat entre membros do grupo
-- Recursos avançados de produtividade
-  - Integração com outros aplicativos
-  - Comandos de voz para criação de tarefas
-- Relatórios avançados
-  - Análise de produtividade
-  - Métricas de conclusão
+- **Produtividade e Comunicação Integrada**
+  - Plataforma de comunicação interna:
+    - Chat em tempo real entre membros dos grupos
+  - Recursos de automação e produtividade:
+    - Integração com aplicativo de produtividade
+    - Sistema de comandos de voz para criação de tarefas
+  - Análise avançada de dados:
+    - Relatórios completos de produtividade individual e coletiva
+    - Métricas detalhadas de tempo, conclusão e atrasos
+    - Visualizações gráficas personalizáveis de desempenho
+    - Recomendações inteligentes para otimização de processos baseadas em padrões de uso
 
 ## 💡 Boas Práticas Implementadas
 
