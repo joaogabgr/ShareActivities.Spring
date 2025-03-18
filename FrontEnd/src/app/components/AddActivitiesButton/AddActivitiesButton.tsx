@@ -1,8 +1,8 @@
-import { colors } from "@/src/globalCSS";
+import { colors, shadows } from "@/src/globalCSS";
 import { faPlus } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-native-fontawesome";
 import { useRouter } from "expo-router";
-import { View, StyleSheet, TouchableOpacity } from "react-native";
+import { StyleSheet, TouchableOpacity } from "react-native";
 import { useContext } from "react";
 import { AuthContext } from "@/src/contexts/AuthContext";
 
@@ -19,8 +19,16 @@ export default function AddActivitiesButton() {
     }
 
     return (
-        <TouchableOpacity style={styles.container} onPress={handlePress}>
-            <FontAwesomeIcon icon={faPlus} size={30} color={colors.orange} />
+        <TouchableOpacity 
+            style={styles.container} 
+            onPress={handlePress}
+            activeOpacity={0.8}
+        >
+            <FontAwesomeIcon 
+                icon={faPlus} 
+                size={24} 
+                color={colors.textLight} 
+            />
         </TouchableOpacity>
     );
 }
@@ -30,19 +38,12 @@ const styles = StyleSheet.create({
         position: 'absolute',
         bottom: 20,
         right: 20,
-        backgroundColor: colors.darkGray,
-        width: 60,
-        height: 60,
-        borderRadius: 30,
+        backgroundColor: colors.primary,
+        width: 56,
+        height: 56,
+        borderRadius: 28,
         justifyContent: 'center',
         alignItems: 'center',
-        elevation: 5,
-        shadowColor: '#000',
-        shadowOffset: {
-            width: 0,
-            height: 2,
-        },
-        shadowOpacity: 0.25,
-        shadowRadius: 3.84,
+        ...shadows.large,
     },
 });

@@ -7,16 +7,23 @@ import {
   StyleSheet,
   SafeAreaView,
   Modal,
-  Platform,
   ScrollView,
+  ActivityIndicator,
 } from "react-native";
 import Header from "../../../components/header/Header";
-import { colors, padding, borderRadius, margin } from "@/src/globalCSS";
+import { colors, fonts, shadows, spacing } from "@/src/globalCSS";
 import { useRouter } from "expo-router";
 import { links } from "@/src/api/api";
 import { ErrorAlertComponent } from "@/src/app/components/Alerts/AlertComponent";
 import { FontAwesomeIcon } from "@fortawesome/react-native-fontawesome";
-import { faChevronDown, faCalendarAlt } from "@fortawesome/free-solid-svg-icons";
+import { 
+  faChevronDown, 
+  faCalendarAlt, 
+  faTasksAlt, 
+  faListCheck, 
+  faTag, 
+  faAlignLeft 
+} from "@fortawesome/free-solid-svg-icons";
 import { CreateActivities } from "@/src/types/Activities/CreateActivities";
 import { AuthContext } from "@/src/contexts/AuthContext";
 import KeyboardAvoidingContainer from "@/src/app/components/KeyboardAvoidingContainer/KeyboardAvoidingContainer";
@@ -51,6 +58,7 @@ export default function FormAddActivities() {
   const [priority, setPriority] = useState<"HIGH" | "MEDIUM" | "LOW">("MEDIUM");
   const [showStatusModal, setShowStatusModal] = useState(false);
   const [showPriorityModal, setShowPriorityModal] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const authContext = useContext(AuthContext);
 
   const handleSubmit = async () => {
@@ -61,6 +69,8 @@ export default function FormAddActivities() {
       );
       return;
     }
+
+    setIsSubmitting(true);
 
     // Se tiver data de expiração, ajusta para o final do dia
     let formattedDate = null;
@@ -77,6 +87,8 @@ export default function FormAddActivities() {
       type: type,
       dateExpire: formattedDate ? formattedDate.toISOString() : null,
       priority: priority,
+      daysForRecover: 0,
+      familyId: ""
     };
 
     try {
@@ -90,6 +102,8 @@ export default function FormAddActivities() {
         "Erro ao criar atividade",
         "Não foi possível criar a atividade. Tente novamente mais tarde."
       );
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
@@ -108,350 +122,411 @@ export default function FormAddActivities() {
   };
 
   const formatDisplayDate = (date: Date | null) => {
-    if (!date) return "";
-    return `${date.getDate().toString().padStart(2, '0')}/${(date.getMonth() + 1).toString().padStart(2, '0')}/${date.getFullYear()}`;
+    if (!date) return "Selecione uma data";
+    return `${date.getDate()} de ${MONTHS[date.getMonth()]} de ${date.getFullYear()}`;
   };
 
-  // Gerar anos para o seletor (ano atual até 5 anos no futuro)
   const generateYears = () => {
     const currentYear = new Date().getFullYear();
     const years = [];
-    for (let i = 0; i <= 5; i++) {
-      years.push(currentYear + i);
+    for (let i = currentYear; i <= currentYear + 10; i++) {
+      years.push(i);
     }
     return years;
   };
 
-  // Gerar dias para o seletor (1-31, ajustado para o mês)
   const generateDays = (month: number, year: number) => {
-    const daysInMonth = new Date(year, month + 1, 0).getDate();
+    // Pega o último dia do mês
+    const lastDay = new Date(year, month + 1, 0).getDate();
     const days = [];
-    const today = new Date();
-    today.setHours(0, 0, 0, 0);
-
-    for (let i = 1; i <= daysInMonth; i++) {
-      const currentDate = new Date(year, month, i);
-      currentDate.setHours(0, 0, 0, 0);
-      
-      if (currentDate >= today) {
-        days.push(i);
-      }
+    for (let i = 1; i <= lastDay; i++) {
+      days.push(i);
     }
     return days;
   };
 
   const getStatusLabel = (value: string) => {
-    return (
-      STATUS_OPTIONS.find((option) => option.value === value)?.label || value
-    );
+    const option = STATUS_OPTIONS.find(opt => opt.value === value);
+    return option ? option.label : value;
   };
 
   const getPriorityLabel = (value: string) => {
-    return (
-      PRIORITY_OPTIONS.find((option) => option.value === value)?.label || value
-    );
+    const option = PRIORITY_OPTIONS.find(opt => opt.value === value);
+    return option ? option.label : value;
+  };
+
+  const getPriorityColor = (value: string) => {
+    switch (value) {
+      case "HIGH":
+        return colors.priorityHigh;
+      case "MEDIUM":
+        return colors.priorityMedium;
+      case "LOW":
+        return colors.priorityLow;
+      default:
+        return colors.disabled;
+    }
+  };
+
+  const getStatusColor = (value: string) => {
+    switch (value) {
+      case "PENDING":
+        return colors.statusPending;
+      case "IN_PROGRESS":
+        return colors.statusInProgress;
+      case "DONE":
+        return colors.statusDone;
+      default:
+        return colors.disabled;
+    }
   };
 
   return (
     <SafeAreaView style={styles.container}>
       <Header />
       <KeyboardAvoidingContainer>
-        <View style={styles.formContainer}>
-          <Text style={styles.label}>Nome da Atividade *</Text>
-          <TextInput
-            style={styles.input}
-            value={title}
-            onChangeText={setTitle}
-            placeholder="Digite o nome da atividade"
-            placeholderTextColor={colors.gray}
-          />
+        <ScrollView
+          contentContainerStyle={styles.scrollContent}
+          showsVerticalScrollIndicator={false}
+        >
+          <View style={styles.content}>
+            <Text style={styles.title}>Nova Atividade</Text>
 
-          <Text style={styles.label}>Tipo *</Text>
-          <TextInput
-            style={styles.input}
-            value={type}
-            onChangeText={setType}
-            placeholder="Digite o tipo da atividade"
-            placeholderTextColor={colors.gray}
-          />
-
-          <Text style={styles.label}>Descrição *</Text>
-          <TextInput
-            style={[styles.input, styles.textArea]}
-            value={description}
-            onChangeText={setDescription}
-            placeholder="Digite a descrição da atividade"
-            placeholderTextColor={colors.gray}
-            multiline
-            numberOfLines={4}
-          />
-
-          <Text style={styles.label}>Data de Expiração</Text>
-          <TouchableOpacity
-            style={styles.dateButton}
-            onPress={openDatePicker}
-          >
-            <Text style={styles.dateButtonText}>
-              {expirationDate ? formatDisplayDate(expirationDate) : "Selecione uma data"}
-            </Text>
-            <FontAwesomeIcon
-              icon={faCalendarAlt}
-              color={colors.white}
-              size={16}
-            />
-          </TouchableOpacity>
-
-          <Text style={styles.label}>Status *</Text>
-          <TouchableOpacity
-            style={styles.statusButton}
-            onPress={() => setShowStatusModal(true)}
-          >
-            <Text style={styles.statusButtonText}>
-              {getStatusLabel(status)}
-            </Text>
-            <FontAwesomeIcon
-              icon={faChevronDown}
-              color={colors.white}
-              size={16}
-            />
-          </TouchableOpacity>
-
-          <Text style={styles.label}>Prioridade *</Text>
-          <TouchableOpacity
-            style={styles.statusButton}
-            onPress={() => setShowPriorityModal(true)}
-          >
-            <Text style={styles.statusButtonText}>
-              {getPriorityLabel(priority)}
-            </Text>
-            <FontAwesomeIcon
-              icon={faChevronDown}
-              color={colors.white}
-              size={16}
-            />
-          </TouchableOpacity>
-
-          <TouchableOpacity style={styles.button} onPress={handleSubmit}>
-            <Text style={styles.buttonText}>Salvar Atividade</Text>
-          </TouchableOpacity>
-        </View>
-      </KeyboardAvoidingContainer>
-
-      {/* Modal para seleção de data */}
-      <Modal
-        visible={showDateModal}
-        transparent
-        animationType="slide"
-        onRequestClose={cancelDateSelection}
-      >
-        <View style={styles.modalOverlay}>
-          <View style={styles.modalContent}>
-            <Text style={styles.modalTitle}>Selecione a Data</Text>
-            
-            <ScrollView style={styles.datePickerContainer}>
-              <View style={styles.datePickerContent}>
-                {/* Seletor de Dia */}
-                <View style={styles.datePickerColumn}>
-                  <Text style={styles.datePickerLabel}>Dia</Text>
-                  <ScrollView style={styles.datePickerOptions} showsVerticalScrollIndicator={true}>
-                    {generateDays(tempDate.getMonth(), tempDate.getFullYear()).map((day) => (
-                      <TouchableOpacity
-                        key={`day-${day}`}
-                        style={[
-                          styles.dateOption,
-                          tempDate.getDate() === day && styles.dateOptionSelected,
-                        ]}
-                        onPress={() => {
-                          const newDate = new Date(tempDate);
-                          newDate.setDate(day);
-                          setTempDate(newDate);
-                        }}
-                      >
-                        <Text
-                          style={[
-                            styles.dateOptionText,
-                            tempDate.getDate() === day && styles.dateOptionTextSelected,
-                          ]}
-                        >
-                          {day}
-                        </Text>
-                      </TouchableOpacity>
-                    ))}
-                  </ScrollView>
-                </View>
-
-                {/* Seletor de Mês */}
-                <View style={styles.datePickerColumn}>
-                  <Text style={styles.datePickerLabel}>Mês</Text>
-                  <ScrollView style={styles.datePickerOptions} showsVerticalScrollIndicator={true}>
-                    {MONTHS.map((month, index) => {
-                      const currentDate = new Date();
-                      const currentYear = currentDate.getFullYear();
-                      const currentMonth = currentDate.getMonth();
-                      
-                      // Desabilita meses anteriores ao atual no ano corrente
-                      if (tempDate.getFullYear() === currentYear && index < currentMonth) {
-                        return null;
-                      }
-
-                      return (
-                        <TouchableOpacity
-                          key={`month-${index}`}
-                          style={[
-                            styles.dateOption,
-                            tempDate.getMonth() === index && styles.dateOptionSelected,
-                          ]}
-                          onPress={() => {
-                            const newDate = new Date(tempDate);
-                            newDate.setMonth(index);
-                            // Ajustar o dia se necessário (ex: 31 de março para 30 de abril)
-                            const daysInNewMonth = new Date(newDate.getFullYear(), index + 1, 0).getDate();
-                            if (newDate.getDate() > daysInNewMonth) {
-                              newDate.setDate(daysInNewMonth);
-                            }
-
-                            // Se a nova data for anterior à data atual, ajusta para o primeiro dia disponível
-                            const today = new Date();
-                            today.setHours(0, 0, 0, 0);
-                            if (newDate < today) {
-                              newDate.setDate(today.getDate());
-                            }
-
-                            setTempDate(newDate);
-                          }}
-                        >
-                          <Text
-                            style={[
-                              styles.dateOptionText,
-                              tempDate.getMonth() === index && styles.dateOptionTextSelected,
-                            ]}
-                          >
-                            {month}
-                          </Text>
-                        </TouchableOpacity>
-                      );
-                    })}
-                  </ScrollView>
-                </View>
-
-                {/* Seletor de Ano */}
-                <View style={styles.datePickerColumn}>
-                  <Text style={styles.datePickerLabel}>Ano</Text>
-                  <ScrollView style={styles.datePickerOptions} showsVerticalScrollIndicator={true}>
-                    {generateYears().map((year) => (
-                      <TouchableOpacity
-                        key={`year-${year}`}
-                        style={[
-                          styles.dateOption,
-                          tempDate.getFullYear() === year && styles.dateOptionSelected,
-                        ]}
-                        onPress={() => {
-                          const newDate = new Date(tempDate);
-                          newDate.setFullYear(year);
-                          setTempDate(newDate);
-                        }}
-                      >
-                        <Text
-                          style={[
-                            styles.dateOptionText,
-                            tempDate.getFullYear() === year && styles.dateOptionTextSelected,
-                          ]}
-                        >
-                          {year}
-                        </Text>
-                      </TouchableOpacity>
-                    ))}
-                  </ScrollView>
+            <View style={[styles.formContainer, shadows.medium]}>
+              {/* Nome da atividade */}
+              <View style={styles.formGroup}>
+                <Text style={styles.label}>Nome da atividade *</Text>
+                <View style={styles.inputContainer}>
+                  <FontAwesomeIcon icon={faTasksAlt} size={20} color={colors.primary} style={styles.inputIcon} />
+                  <TextInput
+                    style={styles.input}
+                    placeholder="Digite o nome da atividade"
+                    value={title}
+                    onChangeText={setTitle}
+                    placeholderTextColor={colors.disabled}
+                  />
                 </View>
               </View>
-            </ScrollView>
 
-            <View style={styles.datePickerActions}>
-              <TouchableOpacity
-                style={[styles.datePickerButton, styles.datePickerCancelButton]}
-                onPress={cancelDateSelection}
-              >
-                <Text style={styles.datePickerButtonText}>Cancelar</Text>
-              </TouchableOpacity>
-              <TouchableOpacity
-                style={[styles.datePickerButton, styles.datePickerConfirmButton]}
-                onPress={confirmDate}
-              >
-                <Text style={styles.datePickerButtonText}>Confirmar</Text>
-              </TouchableOpacity>
+              {/* Descrição */}
+              <View style={styles.formGroup}>
+                <Text style={styles.label}>Descrição *</Text>
+                <View style={styles.textareaContainer}>
+                  <FontAwesomeIcon icon={faAlignLeft} size={20} color={colors.primary} style={styles.inputIcon} />
+                  <TextInput
+                    style={styles.textarea}
+                    placeholder="Digite a descrição da atividade"
+                    value={description}
+                    onChangeText={setDescription}
+                    multiline
+                    numberOfLines={4}
+                    placeholderTextColor={colors.disabled}
+                  />
+                </View>
+              </View>
+
+              {/* Tipo */}
+              <View style={styles.formGroup}>
+                <Text style={styles.label}>Tipo *</Text>
+                <View style={styles.inputContainer}>
+                  <FontAwesomeIcon icon={faTag} size={20} color={colors.primary} style={styles.inputIcon} />
+                  <TextInput
+                    style={styles.input}
+                    placeholder="Digite o tipo da atividade"
+                    value={type}
+                    onChangeText={setType}
+                    placeholderTextColor={colors.disabled}
+                  />
+                </View>
+              </View>
+
+              {/* Status */}
+              <View style={styles.formGroup}>
+                <Text style={styles.label}>Status</Text>
+                <TouchableOpacity
+                  style={styles.selectContainer}
+                  onPress={() => setShowStatusModal(true)}
+                >
+                  <FontAwesomeIcon icon={faListCheck} size={20} color={colors.primary} style={styles.inputIcon} />
+                  <View style={styles.selectTextContainer}>
+                    <Text style={styles.selectText}>{getStatusLabel(status)}</Text>
+                  </View>
+                  <View style={[styles.statusBadge, { backgroundColor: getStatusColor(status) }]}>
+                    <Text style={styles.statusBadgeText}>{getStatusLabel(status)}</Text>
+                  </View>
+                  <FontAwesomeIcon icon={faChevronDown} size={16} color={colors.disabled} />
+                </TouchableOpacity>
+              </View>
+
+              {/* Prioridade */}
+              <View style={styles.formGroup}>
+                <Text style={styles.label}>Prioridade</Text>
+                <TouchableOpacity
+                  style={styles.selectContainer}
+                  onPress={() => setShowPriorityModal(true)}
+                >
+                  <FontAwesomeIcon icon={faListCheck} size={20} color={colors.primary} style={styles.inputIcon} />
+                  <View style={styles.selectTextContainer}>
+                    <Text style={styles.selectText}>{getPriorityLabel(priority)}</Text>
+                  </View>
+                  <View style={[styles.priorityBadge, { backgroundColor: getPriorityColor(priority) }]}>
+                    <Text style={styles.priorityBadgeText}>{getPriorityLabel(priority)}</Text>
+                  </View>
+                  <FontAwesomeIcon icon={faChevronDown} size={16} color={colors.disabled} />
+                </TouchableOpacity>
+              </View>
+
+              {/* Data de expiração */}
+              <View style={styles.formGroup}>
+                <Text style={styles.label}>Data de expiração</Text>
+                <TouchableOpacity
+                  style={styles.selectContainer}
+                  onPress={openDatePicker}
+                >
+                  <FontAwesomeIcon icon={faCalendarAlt} size={20} color={colors.primary} style={styles.inputIcon} />
+                  <Text style={styles.selectText}>{formatDisplayDate(expirationDate)}</Text>
+                  <FontAwesomeIcon icon={faChevronDown} size={16} color={colors.disabled} />
+                </TouchableOpacity>
+              </View>
+
+              {/* Botões */}
+              <View style={styles.buttonContainer}>
+                <TouchableOpacity
+                  style={[styles.cancelButton, shadows.small]}
+                  onPress={() => router.back()}
+                >
+                  <Text style={styles.cancelButtonText}>Cancelar</Text>
+                </TouchableOpacity>
+                <TouchableOpacity
+                  style={[styles.submitButton, shadows.small]}
+                  onPress={handleSubmit}
+                  disabled={isSubmitting}
+                >
+                  {isSubmitting ? (
+                    <ActivityIndicator size="small" color={colors.textLight} />
+                  ) : (
+                    <Text style={styles.submitButtonText}>Criar Atividade</Text>
+                  )}
+                </TouchableOpacity>
+              </View>
             </View>
           </View>
-        </View>
-      </Modal>
+        </ScrollView>
+      </KeyboardAvoidingContainer>
 
       {/* Modal para seleção de status */}
       <Modal
-        visible={showStatusModal}
-        transparent
         animationType="slide"
+        transparent={true}
+        visible={showStatusModal}
         onRequestClose={() => setShowStatusModal(false)}
       >
         <View style={styles.modalOverlay}>
-          <View style={styles.modalContent}>
+          <View style={[styles.modalContent, shadows.large]}>
             <Text style={styles.modalTitle}>Selecione o Status</Text>
-            {STATUS_OPTIONS.map((option) => (
-              <TouchableOpacity
-                key={option.value}
-                style={[
-                  styles.modalOption,
-                  status === option.value && styles.modalOptionSelected,
-                ]}
-                onPress={() => {
-                  setStatus(option.value);
-                  setShowStatusModal(false);
-                }}
-              >
-                <Text
+            
+            <View style={styles.optionsList}>
+              {STATUS_OPTIONS.map((option) => (
+                <TouchableOpacity
+                  key={option.value}
                   style={[
-                    styles.modalOptionText,
-                    status === option.value && styles.modalOptionTextSelected,
+                    styles.optionItem,
+                    status === option.value && styles.optionItemSelected,
                   ]}
+                  onPress={() => {
+                    setStatus(option.value);
+                    setShowStatusModal(false);
+                  }}
                 >
-                  {option.label}
-                </Text>
-              </TouchableOpacity>
-            ))}
+                  <View style={[styles.statusBadge, { backgroundColor: getStatusColor(option.value) }]}>
+                    <Text style={styles.statusBadgeText}>{option.label}</Text>
+                  </View>
+                  <Text style={styles.optionText}>{option.label}</Text>
+                </TouchableOpacity>
+              ))}
+            </View>
+            
+            <TouchableOpacity
+              style={styles.modalCloseButton}
+              onPress={() => setShowStatusModal(false)}
+            >
+              <Text style={styles.modalCloseButtonText}>Cancelar</Text>
+            </TouchableOpacity>
           </View>
         </View>
       </Modal>
 
       {/* Modal para seleção de prioridade */}
       <Modal
-        visible={showPriorityModal}
-        transparent
         animationType="slide"
+        transparent={true}
+        visible={showPriorityModal}
         onRequestClose={() => setShowPriorityModal(false)}
       >
         <View style={styles.modalOverlay}>
-          <View style={styles.modalContent}>
+          <View style={[styles.modalContent, shadows.large]}>
             <Text style={styles.modalTitle}>Selecione a Prioridade</Text>
-            {PRIORITY_OPTIONS.map((option) => (
-              <TouchableOpacity
-                key={option.value}
-                style={[
-                  styles.modalOption,
-                  priority === option.value && styles.modalOptionSelected,
-                ]}
-                onPress={() => {
-                  setPriority(option.value as "HIGH" | "MEDIUM" | "LOW");
-                  setShowPriorityModal(false);
-                }}
-              >
-                <Text
+            
+            <View style={styles.optionsList}>
+              {PRIORITY_OPTIONS.map((option) => (
+                <TouchableOpacity
+                  key={option.value}
                   style={[
-                    styles.modalOptionText,
-                    priority === option.value && styles.modalOptionTextSelected,
+                    styles.optionItem,
+                    priority === option.value && styles.optionItemSelected,
                   ]}
+                  onPress={() => {
+                    setPriority(option.value as "HIGH" | "MEDIUM" | "LOW");
+                    setShowPriorityModal(false);
+                  }}
                 >
-                  {option.label}
-                </Text>
+                  <View style={[styles.priorityBadge, { backgroundColor: getPriorityColor(option.value) }]}>
+                    <Text style={styles.priorityBadgeText}>{option.label}</Text>
+                  </View>
+                  <Text style={styles.optionText}>{option.label}</Text>
+                </TouchableOpacity>
+              ))}
+            </View>
+            
+            <TouchableOpacity
+              style={styles.modalCloseButton}
+              onPress={() => setShowPriorityModal(false)}
+            >
+              <Text style={styles.modalCloseButtonText}>Cancelar</Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+      </Modal>
+
+      {/* Modal para seleção de data */}
+      <Modal
+        animationType="slide"
+        transparent={true}
+        visible={showDateModal}
+        onRequestClose={cancelDateSelection}
+      >
+        <View style={styles.modalOverlay}>
+          <View style={[styles.modalContent, shadows.large]}>
+            <Text style={styles.modalTitle}>Selecione a Data</Text>
+            
+            <View style={styles.datePickerContainer}>
+              <View style={styles.datePickerColumn}>
+                <Text style={styles.datePickerLabel}>Dia</Text>
+                <ScrollView 
+                  style={styles.datePickerScrollView}
+                  showsVerticalScrollIndicator={false}
+                >
+                  {generateDays(tempDate.getMonth(), tempDate.getFullYear()).map((day) => (
+                    <TouchableOpacity
+                      key={`day-${day}`}
+                      style={[
+                        styles.datePickerItem,
+                        tempDate.getDate() === day && styles.datePickerItemSelected,
+                      ]}
+                      onPress={() => {
+                        const newDate = new Date(tempDate);
+                        newDate.setDate(day);
+                        setTempDate(newDate);
+                      }}
+                    >
+                      <Text
+                        style={[
+                          styles.datePickerItemText,
+                          tempDate.getDate() === day && styles.datePickerItemTextSelected,
+                        ]}
+                      >
+                        {day}
+                      </Text>
+                    </TouchableOpacity>
+                  ))}
+                </ScrollView>
+              </View>
+              
+              <View style={styles.datePickerColumn}>
+                <Text style={styles.datePickerLabel}>Mês</Text>
+                <ScrollView 
+                  style={styles.datePickerScrollView}
+                  showsVerticalScrollIndicator={false}
+                >
+                  {MONTHS.map((month, index) => (
+                    <TouchableOpacity
+                      key={`month-${index}`}
+                      style={[
+                        styles.datePickerItem,
+                        tempDate.getMonth() === index && styles.datePickerItemSelected,
+                      ]}
+                      onPress={() => {
+                        const newDate = new Date(tempDate);
+                        newDate.setMonth(index);
+                        // Ajusta para o último dia do mês se o dia atual for maior
+                        const lastDay = new Date(newDate.getFullYear(), index + 1, 0).getDate();
+                        if (newDate.getDate() > lastDay) {
+                          newDate.setDate(lastDay);
+                        }
+                        setTempDate(newDate);
+                      }}
+                    >
+                      <Text
+                        style={[
+                          styles.datePickerItemText,
+                          tempDate.getMonth() === index && styles.datePickerItemTextSelected,
+                        ]}
+                      >
+                        {month}
+                      </Text>
+                    </TouchableOpacity>
+                  ))}
+                </ScrollView>
+              </View>
+              
+              <View style={styles.datePickerColumn}>
+                <Text style={styles.datePickerLabel}>Ano</Text>
+                <ScrollView 
+                  style={styles.datePickerScrollView}
+                  showsVerticalScrollIndicator={false}
+                >
+                  {generateYears().map((year) => (
+                    <TouchableOpacity
+                      key={`year-${year}`}
+                      style={[
+                        styles.datePickerItem,
+                        tempDate.getFullYear() === year && styles.datePickerItemSelected,
+                      ]}
+                      onPress={() => {
+                        const newDate = new Date(tempDate);
+                        newDate.setFullYear(year);
+                        setTempDate(newDate);
+                      }}
+                    >
+                      <Text
+                        style={[
+                          styles.datePickerItemText,
+                          tempDate.getFullYear() === year && styles.datePickerItemTextSelected,
+                        ]}
+                      >
+                        {year}
+                      </Text>
+                    </TouchableOpacity>
+                  ))}
+                </ScrollView>
+              </View>
+            </View>
+            
+            <View style={styles.datePickerActions}>
+              <TouchableOpacity
+                style={[styles.datePickerButton, styles.datePickerCancelButton]}
+                onPress={cancelDateSelection}
+              >
+                <Text style={styles.datePickerCancelButtonText}>Cancelar</Text>
               </TouchableOpacity>
-            ))}
+              
+              <TouchableOpacity
+                style={[styles.datePickerButton, styles.datePickerConfirmButton]}
+                onPress={confirmDate}
+              >
+                <Text style={styles.datePickerConfirmButtonText}>Confirmar</Text>
+              </TouchableOpacity>
+            </View>
           </View>
         </View>
       </Modal>
@@ -462,160 +537,261 @@ export default function FormAddActivities() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: colors.gray,
+    backgroundColor: colors.background,
+  },
+  scrollContent: {
+    flexGrow: 1,
+  },
+  content: {
+    padding: spacing.large,
+  },
+  title: {
+    fontSize: fonts.size.xxl,
+    fontWeight: fonts.weight.bold,
+    color: colors.textPrimary,
+    marginBottom: spacing.large,
   },
   formContainer: {
-    padding: padding,
-    margin: margin,
+    backgroundColor: colors.surface,
+    borderRadius: 16,
+    padding: spacing.large,
+  },
+  formGroup: {
+    marginBottom: spacing.large,
   },
   label: {
-    color: colors.white,
-    fontSize: 16,
-    marginBottom: 8,
-    fontWeight: "bold",
+    fontSize: fonts.size.medium,
+    fontWeight: fonts.weight.medium,
+    color: colors.textPrimary,
+    marginBottom: spacing.small,
+  },
+  inputContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    borderWidth: 1,
+    borderColor: colors.divider,
+    borderRadius: 8,
+    paddingHorizontal: spacing.medium,
+    height: 56,
+  },
+  textareaContainer: {
+    flexDirection: 'row',
+    borderWidth: 1,
+    borderColor: colors.divider,
+    borderRadius: 8,
+    paddingHorizontal: spacing.medium,
+    paddingVertical: spacing.small,
+  },
+  inputIcon: {
+    marginRight: spacing.small,
   },
   input: {
-    backgroundColor: colors.darkGray,
-    borderRadius: borderRadius,
-    padding: padding,
-    color: colors.white,
-    marginBottom: margin,
-  },
-  textArea: {
-    height: 100,
-    textAlignVertical: "top",
-  },
-  dateButton: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "center",
-    backgroundColor: colors.darkGray,
-    borderRadius: borderRadius,
-    padding: padding,
-    marginBottom: margin,
-  },
-  dateButtonText: {
-    color: colors.white,
-    fontSize: 16,
-  },
-  statusButton: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "center",
-    backgroundColor: colors.darkGray,
-    borderRadius: borderRadius,
-    padding: padding,
-    marginBottom: margin,
-  },
-  statusButtonText: {
-    color: colors.white,
-    fontSize: 16,
-  },
-  button: {
-    backgroundColor: colors.orange,
-    padding: padding,
-    borderRadius: borderRadius,
-    alignItems: "center",
-    marginTop: margin,
-  },
-  buttonText: {
-    color: colors.white,
-    fontSize: 16,
-    fontWeight: "bold",
-  },
-  modalOverlay: {
     flex: 1,
-    backgroundColor: "rgba(0, 0, 0, 0.5)",
-    justifyContent: "flex-end",
+    height: 56,
+    fontSize: fonts.size.medium,
+    color: colors.textPrimary,
   },
-  modalContent: {
-    backgroundColor: colors.darkGray,
-    borderTopLeftRadius: borderRadius * 2,
-    borderTopRightRadius: borderRadius * 2,
-    padding: padding,
+  textarea: {
+    flex: 1,
+    minHeight: 100,
+    fontSize: fonts.size.medium,
+    color: colors.textPrimary,
+    textAlignVertical: 'top',
   },
-  modalTitle: {
-    color: colors.white,
-    fontSize: 18,
-    fontWeight: "bold",
-    marginBottom: margin,
-    textAlign: "center",
+  selectContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    borderWidth: 1,
+    borderColor: colors.divider,
+    borderRadius: 8,
+    paddingHorizontal: spacing.medium,
+    height: 56,
   },
-  modalOption: {
-    padding: padding,
-    borderRadius: borderRadius,
-    marginBottom: 8,
+  selectTextContainer: {
+    flex: 1,
   },
-  modalOptionSelected: {
-    backgroundColor: colors.orange,
+  selectText: {
+    flex: 1,
+    fontSize: fonts.size.medium,
+    color: colors.textPrimary,
+    marginLeft: spacing.small,
   },
-  modalOptionText: {
-    color: colors.white,
-    fontSize: 16,
-    textAlign: "center",
-  },
-  modalOptionTextSelected: {
-    fontWeight: "bold",
-  },
-  datePickerContainer: {
-    maxHeight: 300,
-  },
-  datePickerContent: {
+  buttonContainer: {
     flexDirection: 'row',
     justifyContent: 'space-between',
-    paddingBottom: 20,
+    marginTop: spacing.large,
+  },
+  cancelButton: {
+    flex: 1,
+    backgroundColor: colors.background,
+    borderWidth: 1,
+    borderColor: colors.divider,
+    borderRadius: 8,
+    padding: spacing.medium,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginRight: spacing.medium,
+    height: 56,
+  },
+  cancelButtonText: {
+    color: colors.textSecondary,
+    fontSize: fonts.size.medium,
+    fontWeight: fonts.weight.semiBold,
+  },
+  submitButton: {
+    flex: 2,
+    backgroundColor: colors.primary,
+    borderRadius: 8,
+    padding: spacing.medium,
+    alignItems: 'center',
+    justifyContent: 'center',
+    height: 56,
+  },
+  submitButtonText: {
+    color: colors.textLight,
+    fontSize: fonts.size.medium,
+    fontWeight: fonts.weight.semiBold,
+  },
+  
+  // Estilos para Modal
+  modalOverlay: {
+    flex: 1,
+    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+    justifyContent: 'center',
+    alignItems: 'center',
+    padding: spacing.large,
+  },
+  modalContent: {
+    backgroundColor: colors.surface,
+    borderRadius: 16,
+    padding: spacing.large,
+    width: '100%',
+    maxHeight: '80%',
+  },
+  modalTitle: {
+    fontSize: fonts.size.xl,
+    fontWeight: fonts.weight.bold,
+    color: colors.textPrimary,
+    marginBottom: spacing.large,
+    textAlign: 'center',
+  },
+  optionsList: {
+    marginBottom: spacing.large,
+  },
+  optionItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingVertical: spacing.medium,
+    borderBottomWidth: 1,
+    borderBottomColor: colors.divider,
+  },
+  optionItemSelected: {
+    backgroundColor: colors.background,
+  },
+  optionText: {
+    fontSize: fonts.size.medium,
+    color: colors.textPrimary,
+    marginLeft: spacing.medium,
+  },
+  modalCloseButton: {
+    backgroundColor: colors.background,
+    borderRadius: 8,
+    padding: spacing.medium,
+    alignItems: 'center',
+  },
+  modalCloseButtonText: {
+    color: colors.textPrimary,
+    fontSize: fonts.size.medium,
+    fontWeight: fonts.weight.semiBold,
+  },
+  
+  // Badges
+  statusBadge: {
+    borderRadius: 4,
+    paddingHorizontal: spacing.small,
+    paddingVertical: spacing.xs,
+    marginRight: spacing.medium,
+  },
+  statusBadgeText: {
+    fontSize: fonts.size.xs,
+    color: colors.textLight,
+    fontWeight: fonts.weight.medium,
+  },
+  priorityBadge: {
+    borderRadius: 4,
+    paddingHorizontal: spacing.small,
+    paddingVertical: spacing.xs,
+    marginRight: spacing.medium,
+  },
+  priorityBadgeText: {
+    fontSize: fonts.size.xs,
+    color: colors.textLight,
+    fontWeight: fonts.weight.medium,
+  },
+  
+  // Date Picker
+  datePickerContainer: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    marginBottom: spacing.large,
   },
   datePickerColumn: {
     flex: 1,
-    marginHorizontal: 4,
+    marginHorizontal: spacing.small,
   },
   datePickerLabel: {
-    color: colors.white,
-    fontSize: 14,
-    fontWeight: "bold",
-    textAlign: "center",
-    marginBottom: 8,
+    fontSize: fonts.size.small,
+    fontWeight: fonts.weight.medium,
+    color: colors.textSecondary,
+    textAlign: 'center',
+    marginBottom: spacing.small,
   },
-  datePickerOptions: {
-    maxHeight: 200,
+  datePickerScrollView: {
+    height: 200,
   },
-  dateOption: {
-    padding: 8,
-    borderRadius: borderRadius,
-    marginBottom: 4,
+  datePickerItem: {
+    padding: spacing.medium,
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderRadius: 8,
   },
-  dateOptionSelected: {
-    backgroundColor: colors.orange,
+  datePickerItemSelected: {
+    backgroundColor: colors.primary,
   },
-  dateOptionText: {
-    color: colors.white,
-    fontSize: 14,
-    textAlign: "center",
+  datePickerItemText: {
+    fontSize: fonts.size.medium,
+    color: colors.textPrimary,
   },
-  dateOptionTextSelected: {
-    fontWeight: "bold",
+  datePickerItemTextSelected: {
+    color: colors.textLight,
+    fontWeight: fonts.weight.semiBold,
   },
   datePickerActions: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    marginTop: margin,
+    flexDirection: 'row',
+    justifyContent: 'space-between',
   },
   datePickerButton: {
     flex: 1,
-    padding: padding,
-    borderRadius: borderRadius,
-    alignItems: "center",
-    marginHorizontal: 4,
+    padding: spacing.medium,
+    borderRadius: 8,
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   datePickerCancelButton: {
-    backgroundColor: colors.gray,
+    backgroundColor: colors.background,
+    marginRight: spacing.medium,
+  },
+  datePickerCancelButtonText: {
+    color: colors.textSecondary,
+    fontSize: fonts.size.medium,
+    fontWeight: fonts.weight.semiBold,
   },
   datePickerConfirmButton: {
-    backgroundColor: colors.orange,
+    backgroundColor: colors.primary,
   },
-  datePickerButtonText: {
-    color: colors.white,
-    fontSize: 16,
-    fontWeight: "bold",
+  datePickerConfirmButtonText: {
+    color: colors.textLight,
+    fontSize: fonts.size.medium,
+    fontWeight: fonts.weight.semiBold,
   },
 });

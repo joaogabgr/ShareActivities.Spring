@@ -1,10 +1,10 @@
 import { AuthContext } from "@/src/contexts/AuthContext";
-import { colors, padding } from "@/src/globalCSS";
+import { colors, fonts, shadows, spacing } from "@/src/globalCSS";
 import { faPeopleRoof, faSignOutAlt } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-native-fontawesome";
 import { useRouter } from "expo-router";
 import { useContext } from "react";
-import { StyleSheet, TouchableOpacity, View } from "react-native";
+import { StyleSheet, Text, TouchableOpacity, View } from "react-native";
 
 export default function Header() {
   const authContext = useContext(AuthContext);
@@ -20,11 +20,14 @@ export default function Header() {
 
   return (
     <View style={styles.header}>
-      <TouchableOpacity onPress={handleMenu}>
-        <FontAwesomeIcon style={styles.icon} icon={faPeopleRoof} size={45} />
-      </TouchableOpacity>
-      <TouchableOpacity onPress={handleLogout}>
-        <FontAwesomeIcon style={styles.icon} icon={faSignOutAlt} size={30} />
+      <View style={styles.leftContent}>
+        <TouchableOpacity style={styles.iconButton} onPress={handleMenu}>
+          <FontAwesomeIcon style={styles.icon} icon={faPeopleRoof} size={30} />
+        </TouchableOpacity>
+        <Text style={styles.title}>Share Activities</Text>
+      </View>
+      <TouchableOpacity style={styles.logoutButton} onPress={handleLogout}>
+        <FontAwesomeIcon style={styles.logoutIcon} icon={faSignOutAlt} size={22} />
       </TouchableOpacity>
     </View>
   );
@@ -32,15 +35,39 @@ export default function Header() {
 
 const styles = StyleSheet.create({
   header: {
+    flexDirection: "row",
     alignItems: "center",
-    backgroundColor: colors.darkGray,
+    backgroundColor: colors.primary,
     width: "100%",
     justifyContent: "space-between",
-    padding: padding,
+    paddingVertical: spacing.medium,
+    paddingHorizontal: spacing.large,
+    ...shadows.medium,
+  },
+  leftContent: {
     flexDirection: "row",
+    alignItems: "center",
   },
-
+  iconButton: {
+    marginRight: spacing.medium,
+  },
   icon: {
-    color: colors.orange,
+    color: colors.textLight,
   },
+  title: {
+    fontSize: fonts.size.xl,
+    fontWeight: fonts.weight.bold,
+    color: colors.textLight,
+  },
+  logoutButton: {
+    width: 40,
+    height: 40,
+    backgroundColor: colors.primaryDark,
+    borderRadius: 20,
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  logoutIcon: {
+    color: colors.textLight,
+  }
 });

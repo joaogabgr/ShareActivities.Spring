@@ -1,9 +1,9 @@
-import { View, Text, StyleSheet, TextInput, TouchableOpacity, SafeAreaView, ScrollView, Platform } from "react-native";
+import { View, Text, StyleSheet, TextInput, TouchableOpacity, SafeAreaView } from "react-native";
 import { useRouter } from "expo-router";
 import React, { useContext, useState } from "react";
 import { FontAwesomeIcon } from '@fortawesome/react-native-fontawesome';
-import { faUserPlus } from '@fortawesome/free-solid-svg-icons';
-import { borderRadius, colors, margin, padding } from "../../../globalCSS";
+import { faEnvelope, faIdCard, faLock, faUserPlus } from '@fortawesome/free-solid-svg-icons';
+import { colors, fonts, shadows, spacing } from "../../../globalCSS";
 import { AuthContext } from "@/src/contexts/AuthContext";
 import { api } from "@/src/api/api";
 import { ErrorAlertComponent } from "../../components/Alerts/AlertComponent";
@@ -44,65 +44,96 @@ export default function Register() {
         <SafeAreaView style={styles.container}>
             <KeyboardAvoidingContainer formType="auth">
                 <View style={styles.content}>
-                    <Text style={styles.title}>FamilyPlans</Text>
+                    <View style={styles.logoContainer}>
+                        <FontAwesomeIcon 
+                            icon={faUserPlus} 
+                            size={60} 
+                            color={colors.primary} 
+                        />
+                        <Text style={styles.title}>Criar Conta</Text>
+                        <Text style={styles.subtitle}>Preencha os dados para se cadastrar</Text>
+                    </View>
                     
-                    <View style={styles.formContainer}>
-                        <FontAwesomeIcon icon={faUserPlus} size={80} style={styles.icon} />
+                    <View style={[styles.formContainer, shadows.medium]}>
+                        <View style={styles.inputContainer}>
+                            <FontAwesomeIcon icon={faUserPlus} size={20} color={colors.primary} />
+                            <TextInput
+                                style={styles.input}
+                                onChangeText={text => setName(text)}
+                                value={name}
+                                placeholder="Nome de usuário"
+                                placeholderTextColor={colors.disabled}
+                            />
+                        </View>
                         
-                        <TextInput
-                            style={styles.input}
-                            onChangeText={text => setName(text)}
-                            value={name}
-                            placeholder="Nome de usuario"
-                            placeholderTextColor={colors.gray}
-                        />
-                        <TextInput
-                            style={styles.input}
-                            onChangeText={text => setEmail(text)}
-                            value={email}
-                            placeholder="Email"
-                            placeholderTextColor={colors.gray}
-                            autoCapitalize="none"
-                            keyboardType="email-address"
-                        />
-                        <TextInput
-                            style={styles.input}
-                            onChangeText={text => setCpf(text)}
-                            value={cpf}
-                            placeholder="CPF"
-                            placeholderTextColor={colors.gray}
-                            keyboardType="numeric"
-                        />
-                        <TextInput
-                            style={styles.input}
-                            onChangeText={text => setPassword(text)}
-                            value={password}
-                            placeholder="Password"
-                            placeholderTextColor={colors.gray}
-                            secureTextEntry={true}
-                            autoCapitalize="none"
-                        />
-                        <TextInput
-                            style={styles.input}
-                            onChangeText={text => setConfirmPassword(text)}
-                            value={confirmPassword}
-                            placeholder="Confirm Password"
-                            placeholderTextColor={colors.gray}
-                            secureTextEntry={true}
-                            autoCapitalize="none"
-                        />
+                        <View style={styles.inputContainer}>
+                            <FontAwesomeIcon icon={faEnvelope} size={20} color={colors.primary} />
+                            <TextInput
+                                style={styles.input}
+                                onChangeText={text => setEmail(text)}
+                                value={email}
+                                placeholder="Email"
+                                placeholderTextColor={colors.disabled}
+                                autoCapitalize="none"
+                                keyboardType="email-address"
+                            />
+                        </View>
                         
-                        <TouchableOpacity onPress={registerHandle} style={styles.registerButton}>
-                            <Text style={styles.buttonText}>Registrar</Text>
+                        <View style={styles.inputContainer}>
+                            <FontAwesomeIcon icon={faIdCard} size={20} color={colors.primary} />
+                            <TextInput
+                                style={styles.input}
+                                onChangeText={text => setCpf(text)}
+                                value={cpf}
+                                placeholder="CPF"
+                                placeholderTextColor={colors.disabled}
+                                keyboardType="numeric"
+                            />
+                        </View>
+                        
+                        <View style={styles.inputContainer}>
+                            <FontAwesomeIcon icon={faLock} size={20} color={colors.primary} />
+                            <TextInput
+                                style={styles.input}
+                                onChangeText={text => setPassword(text)}
+                                value={password}
+                                placeholder="Senha"
+                                placeholderTextColor={colors.disabled}
+                                secureTextEntry={true}
+                                autoCapitalize="none"
+                            />
+                        </View>
+                        
+                        <View style={styles.inputContainer}>
+                            <FontAwesomeIcon icon={faLock} size={20} color={colors.primary} />
+                            <TextInput
+                                style={styles.input}
+                                onChangeText={text => setConfirmPassword(text)}
+                                value={confirmPassword}
+                                placeholder="Confirmar senha"
+                                placeholderTextColor={colors.disabled}
+                                secureTextEntry={true}
+                                autoCapitalize="none"
+                            />
+                        </View>
+                        
+                        <TouchableOpacity 
+                            onPress={registerHandle} 
+                            style={[styles.registerButton, shadows.small]}
+                            activeOpacity={0.8}
+                        >
+                            <Text style={styles.buttonText}>Cadastrar</Text>
                         </TouchableOpacity>
                     </View>
 
-                    <TouchableOpacity 
-                        style={styles.loginButton} 
-                        onPress={() => router.push('/pages/auth/Login')}
-                    >
-                        <Text style={styles.buttonText}>Já tenho uma conta</Text>
-                    </TouchableOpacity>
+                    <View style={styles.footer}>
+                        <Text style={styles.footerText}>Já tem uma conta?</Text>
+                        <TouchableOpacity 
+                            onPress={() => router.push('/pages/auth/Login')}
+                        >
+                            <Text style={styles.loginText}>Entrar</Text>
+                        </TouchableOpacity>
+                    </View>
                 </View>
             </KeyboardAvoidingContainer>
         </SafeAreaView>
@@ -112,65 +143,80 @@ export default function Register() {
 const styles = StyleSheet.create({
     container: {
         flex: 1,
-        backgroundColor: colors.white,
-    },
-    scrollContent: {
-        flexGrow: 1,
-        justifyContent: 'center',
+        backgroundColor: colors.background,
     },
     content: {
         flex: 1,
-        padding: padding,
+        padding: spacing.large,
         justifyContent: 'center',
     },
+    logoContainer: {
+        alignItems: 'center',
+        marginBottom: spacing.xl,
+    },
     title: {
-        fontSize: 40,
-        color: colors.white,
-        backgroundColor: colors.darkGray,
-        padding: padding,
-        textAlign: 'center',
-        borderRadius: borderRadius * 2,
-        marginBottom: margin * 2,
+        fontSize: fonts.size.xxxl,
+        fontWeight: fonts.weight.bold,
+        color: colors.primary,
+        marginTop: spacing.medium,
+        marginBottom: spacing.xs,
+    },
+    subtitle: {
+        fontSize: fonts.size.medium,
+        color: colors.textSecondary,
+        marginBottom: spacing.large,
     },
     formContainer: {
-        backgroundColor: colors.darkGray,
-        borderRadius: borderRadius * 2,
-        padding: padding * 2,
-        alignItems: 'center',
-        marginBottom: margin,
+        backgroundColor: colors.surface,
+        borderRadius: 16,
+        padding: spacing.large,
+        marginBottom: spacing.xl,
     },
-    icon: {
-        color: colors.orange,
-        marginBottom: margin * 2,
+    inputContainer: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        borderWidth: 1,
+        borderColor: colors.divider,
+        borderRadius: 8,
+        paddingHorizontal: spacing.medium,
+        marginBottom: spacing.medium,
+        height: 56,
     },
     input: {
-        height: 50,
-        width: '100%',
-        backgroundColor: colors.white,
-        borderRadius: borderRadius,
-        paddingHorizontal: padding,
-        marginBottom: margin,
-        color: colors.darkGray,
+        flex: 1,
+        height: 56,
+        paddingHorizontal: spacing.medium,
+        fontSize: fonts.size.medium,
+        color: colors.textPrimary,
     },
     registerButton: {
-        width: '100%',
-        backgroundColor: colors.orange,
-        padding: padding,
-        borderRadius: borderRadius,
+        backgroundColor: colors.primary,
+        padding: spacing.medium,
+        borderRadius: 8,
         alignItems: 'center',
-        marginTop: margin,
-    },
-    loginButton: {
-        width: '100%',
-        backgroundColor: colors.gray,
-        padding: padding,
-        borderRadius: borderRadius,
-        alignItems: 'center',
-        marginTop: margin,
+        marginTop: spacing.medium,
+        height: 56,
+        justifyContent: 'center',
     },
     buttonText: {
-        color: colors.white,
-        fontSize: 18,
-        fontWeight: 'bold',
+        color: colors.textLight,
+        fontSize: fonts.size.large,
+        fontWeight: fonts.weight.semiBold,
+    },
+    footer: {
+        flexDirection: 'row',
+        justifyContent: 'center',
+        alignItems: 'center',
+        marginTop: spacing.large,
+    },
+    footerText: {
+        color: colors.textSecondary,
+        fontSize: fonts.size.medium,
+    },
+    loginText: {
+        color: colors.primary,
+        fontSize: fonts.size.medium,
+        fontWeight: fonts.weight.semiBold,
+        marginLeft: spacing.small,
     },
 });

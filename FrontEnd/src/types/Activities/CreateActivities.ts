@@ -6,4 +6,6 @@ export type CreateActivities = {
     type: string;
     dateExpire?: string | null;
     priority: string;
+    daysForRecover: number;
+    familyId: string;
 };

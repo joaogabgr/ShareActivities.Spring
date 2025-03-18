@@ -1,9 +1,8 @@
 import { useContext } from "react";
-import { SafeAreaView, StyleSheet, Text, TouchableOpacity, View } from "react-native";
+import { SafeAreaView, StyleSheet, Text, View, Image, ScrollView } from "react-native";
 import { AuthContext } from "@/src/contexts/AuthContext";
-import { colors, padding } from "@/src/globalCSS";
-import { FontAwesomeIcon } from "@fortawesome/react-native-fontawesome";
-import { faList, faPeopleGroup, faPeopleRoof, faUtensils } from "@fortawesome/free-solid-svg-icons";
+import { colors, fonts, shadows, spacing } from "@/src/globalCSS";
+import { faList, faPeopleGroup, faTasks, faCalendarCheck } from "@fortawesome/free-solid-svg-icons";
 import Header from "../components/header/Header";
 import Models from "../components/Models/Models";
 
@@ -11,10 +10,46 @@ export default function Default() {
   return (
     <SafeAreaView style={styles.container}>
       <Header />
-      <View style={styles.modelsContainer}>
-        <Models icon={faPeopleGroup} title="Minha Familia" color="#008000" onPress='/pages/tabs/MyFamily/MyFamily' />
-        <Models icon={faList} title="Tarefas a fazer" color="#00FFFF" onPress="/pages/tabs/ToDo/ToDo"/>
-      </View>
+      <ScrollView contentContainerStyle={styles.scrollContent}>
+        <View style={styles.welcomeSection}>
+          <Text style={styles.welcomeTitle}>Bem-vindo ao Share Activities</Text>
+          <Text style={styles.welcomeSubtitle}>Compartilhe e gerencie atividades com sua família</Text>
+        </View>
+
+        <View style={styles.modelsContainer}>
+          <Models 
+            icon={faPeopleGroup} 
+            title="Minha Família" 
+            color={colors.primary}
+            description="Gerencie os membros da sua família e configure compartilhamentos" 
+            onPress='/pages/tabs/MyFamily/MyFamily' 
+          />
+          
+          <Models 
+            icon={faList} 
+            title="Tarefas a fazer" 
+            color={colors.secondary} 
+            description="Veja e gerencie todas as tarefas pendentes, em progresso e concluídas"
+            onPress="/pages/tabs/ToDo/ToDo"
+          />
+
+          <Models 
+            icon={faTasks} 
+            title="Atividades Recentes" 
+            color={colors.accent} 
+            description="Visualize as atividades recentes da sua família"
+            onPress="/pages/tabs/ToDo/ToDo"
+          />
+
+          <Models 
+            icon={faCalendarCheck} 
+            title="Planejamento" 
+            color={colors.primaryDark} 
+            description="Planeje atividades futuras e organize sua agenda"
+            onPress="/pages/tabs/ToDo/ToDo"
+          />
+        </View>
+      </ScrollView>
     </SafeAreaView>
   );
 }
@@ -22,19 +57,25 @@ export default function Default() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    justifyContent: "flex-start",
-    alignItems: "center",
-    backgroundColor: colors.gray,
+    backgroundColor: colors.background,
   },
-
+  scrollContent: {
+    padding: spacing.large,
+  },
+  welcomeSection: {
+    marginBottom: spacing.large,
+  },
+  welcomeTitle: {
+    fontSize: fonts.size.xxl,
+    fontWeight: fonts.weight.bold,
+    color: colors.textPrimary,
+    marginBottom: spacing.small,
+  },
+  welcomeSubtitle: {
+    fontSize: fonts.size.medium,
+    color: colors.textSecondary,
+  },
   modelsContainer: {
-    flexDirection: "row",
-    justifyContent: "space-around",
-    alignItems: "center",
     width: "100%",
-    flexWrap: 'wrap',
-    paddingLeft: padding*2,
-    paddingRight: padding*2,
   },
-
 });

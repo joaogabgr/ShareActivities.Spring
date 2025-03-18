@@ -3,9 +3,9 @@ import { ErrorAlertComponent } from "@/src/app/components/Alerts/AlertComponent"
 import Header from "@/src/app/components/header/Header";
 import ToDoComponent from "@/src/app/components/ToDoComponent/ToDoComponent";
 import { AuthContext } from "@/src/contexts/AuthContext";
-import { colors, padding } from "@/src/globalCSS";
+import { colors, fonts, shadows, spacing } from "@/src/globalCSS";
 import { useCallback, useContext, useEffect, useState } from "react";
-import { SafeAreaView, StyleSheet, Text, View, Alert, ScrollView, TouchableOpacity } from "react-native";
+import { SafeAreaView, StyleSheet, Text, View, Alert, ScrollView, TouchableOpacity, ActivityIndicator } from "react-native";
 import { FontAwesomeIcon } from "@fortawesome/react-native-fontawesome";
 import { faChevronDown, faChevronUp } from "@fortawesome/free-solid-svg-icons";
 import { useRouter, useLocalSearchParams } from "expo-router";
@@ -151,23 +151,37 @@ export default function ToDo() {
         });
     };
 
+    const getSectionBackgroundColor = (status: string) => {
+        switch(status) {
+            case 'PENDING': return colors.statusPending;
+            case 'IN_PROGRESS': return colors.statusInProgress;
+            case 'DONE': return colors.statusDone;
+            default: return colors.primary;
+        }
+    };
+
     const renderStatusSection = (status: string, title: string) => {
         const statusActivities = getActivitiesByStatus(status);
         if (statusActivities.length === 0) return null;
 
+        const backgroundColor = getSectionBackgroundColor(status);
+
         return (
             <View style={styles.section}>
                 <TouchableOpacity
-                    style={styles.sectionHeader}
+                    style={[styles.sectionHeader, { backgroundColor }, shadows.medium]}
                     onPress={() => toggleSection(status as SectionStatus)}
+                    activeOpacity={0.8}
                 >
                     <View style={styles.titleContainer}>
                         <Text style={styles.sectionTitle}>{title}</Text>
-                        <Text style={styles.countBadge}>({statusActivities.length})</Text>
+                        <View style={styles.countBadge}>
+                            <Text style={styles.countText}>{statusActivities.length}</Text>
+                        </View>
                     </View>
                     <FontAwesomeIcon
                         icon={expandedSections[status as SectionStatus] ? faChevronUp : faChevronDown}
-                        color={colors.white}
+                        color={colors.textLight}
                         size={16}
                     />
                 </TouchableOpacity>
@@ -197,17 +211,26 @@ export default function ToDo() {
     return (
         <SafeAreaView style={styles.container}>
             <Header />
-            <ScrollView style={styles.scrollView}>
+            <View style={styles.contentContainer}>
+                <Text style={styles.pageTitle}>Minhas Tarefas</Text>
                 {loading ? (
-                    <Text style={styles.loadingText}>Carregando...</Text>
+                    <View style={styles.loadingContainer}>
+                        <ActivityIndicator size="large" color={colors.primary} />
+                        <Text style={styles.loadingText}>Carregando atividades...</Text>
+                    </View>
+                ) : activities.length === 0 ? (
+                    <View style={styles.emptyContainer}>
+                        <Text style={styles.emptyText}>Nenhuma atividade encontrada.</Text>
+                        <Text style={styles.emptySubtext}>Toque no botão + para adicionar uma nova atividade.</Text>
+                    </View>
                 ) : (
-                    <>
+                    <ScrollView style={styles.scrollView} contentContainerStyle={styles.scrollContent}>
                         {renderStatusSection("PENDING", "Pendentes")}
                         {renderStatusSection("IN_PROGRESS", "Em Progresso")}
                         {renderStatusSection("DONE", "Concluídas")}
-                    </>
+                    </ScrollView>
                 )}
-            </ScrollView>
+            </View>
             <AddActivitiesButton />
         </SafeAreaView>
     );
@@ -216,24 +239,35 @@ export default function ToDo() {
 const styles = StyleSheet.create({
     container: {
         flex: 1,
-        backgroundColor: colors.gray,
+        backgroundColor: colors.background,
+    },
+    contentContainer: {
+        flex: 1,
+        padding: spacing.medium,
+    },
+    pageTitle: {
+        fontSize: fonts.size.xxl,
+        fontWeight: fonts.weight.bold as any,
+        color: colors.textPrimary,
+        marginBottom: spacing.medium,
+        paddingHorizontal: spacing.medium,
     },
     scrollView: {
         flex: 1,
     },
+    scrollContent: {
+        paddingBottom: spacing.large,
+    },
     section: {
-        paddingLeft: padding * 2,
-        paddingRight: padding * 2,
+        marginBottom: spacing.medium,
     },
     sectionHeader: {
         flexDirection: 'row',
         justifyContent: 'space-between',
         alignItems: 'center',
-        backgroundColor: colors.darkGray,
-        padding: 10,
-        marginHorizontal: 10,
-        borderRadius: 5,
-        marginVertical: 5,
+        padding: spacing.medium,
+        borderRadius: 10,
+        marginBottom: spacing.small,
     },
     titleContainer: {
         flexDirection: 'row',
@@ -241,22 +275,53 @@ const styles = StyleSheet.create({
         gap: 8,
     },
     sectionTitle: {
-        fontSize: 18,
-        fontWeight: 'bold',
-        color: colors.white,
+        fontSize: fonts.size.large,
+        fontWeight: fonts.weight.semiBold as any,
+        color: colors.textLight,
     },
     countBadge: {
-        fontSize: 14,
-        color: colors.white,
-        opacity: 0.8,
+        backgroundColor: 'rgba(255, 255, 255, 0.3)',
+        borderRadius: 20,
+        width: 28,
+        height: 28,
+        justifyContent: 'center',
+        alignItems: 'center',
+        marginLeft: spacing.small,
+    },
+    countText: {
+        color: colors.textLight,
+        fontSize: fonts.size.small,
+        fontWeight: fonts.weight.bold as any,
     },
     sectionContent: {
-        marginTop: 5,
+        paddingHorizontal: spacing.small,
+    },
+    loadingContainer: {
+        flex: 1,
+        justifyContent: 'center',
+        alignItems: 'center',
     },
     loadingText: {
-        color: colors.white,
-        fontSize: 16,
+        marginTop: spacing.medium,
+        fontSize: fonts.size.medium,
+        color: colors.textSecondary,
+    },
+    emptyContainer: {
+        flex: 1,
+        justifyContent: 'center',
+        alignItems: 'center',
+        paddingHorizontal: spacing.large,
+    },
+    emptyText: {
+        fontSize: fonts.size.large,
+        fontWeight: fonts.weight.medium as any,
+        color: colors.textPrimary,
+        marginBottom: spacing.small,
         textAlign: 'center',
-        marginTop: 20,
+    },
+    emptySubtext: {
+        fontSize: fonts.size.medium,
+        color: colors.textSecondary,
+        textAlign: 'center',
     },
 });

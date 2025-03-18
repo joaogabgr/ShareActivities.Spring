@@ -3,14 +3,15 @@ import {
   Text,
   View,
   TouchableOpacity,
-  Dimensions,
 } from "react-native";
-import { borderRadius, colors, margin, padding } from "@/src/globalCSS";
+import { colors, fonts, shadows, spacing } from "@/src/globalCSS";
 import { ReadActivities } from "@/src/types/Activities/ReadActivities";
 import { expireDate, formatDayAndHour } from "@/src/utils/formatDayAndHour";
 import { Swipeable } from "react-native-gesture-handler";
 import { links } from "@/src/api/api";
 import { ErrorAlertComponent } from "@/src/app/components/Alerts/AlertComponent";
+import { FontAwesomeIcon } from "@fortawesome/react-native-fontawesome";
+import { faEdit, faTrash, faClock, faUser, faInfoCircle, faCalendarAlt, faFlag } from "@fortawesome/free-solid-svg-icons";
 
 interface ToDoComponentProps extends ReadActivities {
   onDelete: (id: string) => void;
@@ -26,14 +27,16 @@ export default function ToDoComponent(props: ToDoComponentProps) {
           style={[styles.actionButton, styles.editButton]}
           onPress={() => props.onEdit(props.id)}
         >
-          <Text style={styles.deleteText}>Editar</Text>
+          <FontAwesomeIcon icon={faEdit} size={20} color={colors.textLight} />
+          <Text style={styles.actionText}>Editar</Text>
         </TouchableOpacity>
 
         <TouchableOpacity
           style={[styles.actionButton, styles.deleteButton]}
           onPress={() => props.onDelete(props.id)}
         >
-          <Text style={styles.deleteText}>Excluir</Text>
+          <FontAwesomeIcon icon={faTrash} size={20} color={colors.textLight} />
+          <Text style={styles.actionText}>Excluir</Text>
         </TouchableOpacity>
       </View>
     );
@@ -44,26 +47,26 @@ export default function ToDoComponent(props: ToDoComponentProps) {
       switch (props.status) {
         case "DONE":
           return [
-            { label: "Pendente", value: "PENDING", color: colors.lightGray },
+            { label: "Pendente", value: "PENDING", color: colors.statusPending },
             {
               label: "Em Progresso",
               value: "IN_PROGRESS",
-              color: colors.orange,
+              color: colors.statusInProgress,
             },
           ];
         case "IN_PROGRESS":
           return [
-            { label: "Pendente", value: "PENDING", color: colors.lightGray },
-            { label: "Concluído", value: "DONE", color: colors.green },
+            { label: "Pendente", value: "PENDING", color: colors.statusPending },
+            { label: "Concluído", value: "DONE", color: colors.statusDone },
           ];
         case "PENDING":
           return [
             {
               label: "Em Progresso",
               value: "IN_PROGRESS",
-              color: colors.orange,
+              color: colors.statusInProgress,
             },
-            { label: "Concluído", value: "DONE", color: colors.green },
+            { label: "Concluído", value: "DONE", color: colors.statusDone },
           ];
         default:
           return [];
@@ -93,7 +96,7 @@ export default function ToDoComponent(props: ToDoComponentProps) {
             ]}
             onPress={() => handleStatusChange(statusOption.value)}
           >
-            <Text style={styles.deleteText}>{statusOption.label}</Text>
+            <Text style={styles.actionText}>{statusOption.label}</Text>
           </TouchableOpacity>
         ))}
       </View>
@@ -108,6 +111,21 @@ export default function ToDoComponent(props: ToDoComponentProps) {
         return "Em Progresso";
       case "PENDING":
         return "Pendente";
+      default:
+        return status;
+    }
+  };
+
+  const getStatusColor = (status: string) => {
+    switch (status) {
+      case "DONE":
+        return colors.statusDone;
+      case "IN_PROGRESS":
+        return colors.statusInProgress;
+      case "PENDING":
+        return colors.statusPending;
+      default:
+        return colors.primary;
     }
   };
 
@@ -116,7 +134,7 @@ export default function ToDoComponent(props: ToDoComponentProps) {
     
     const now = new Date();
     const expireDate = new Date(props.dateExpire);
-    expireDate.setHours(expireDate.getHours() - 3); // Ajusta para o fuso horário
+    expireDate.setHours(expireDate.getHours() - 3);
 
     // Se já venceu
     if (now > expireDate) {
@@ -135,8 +153,21 @@ export default function ToDoComponent(props: ToDoComponentProps) {
     return 'normal';
   };
 
+  const getPriorityColor = (priority: string) => {
+    switch (priority) {
+      case "HIGH":
+        return colors.priorityHigh;
+      case "MEDIUM":
+        return colors.priorityMedium;
+      case "LOW":
+        return colors.priorityLow;
+      default:
+        return colors.textSecondary;
+    }
+  };
+
   const containerStyle = () => {
-    const baseStyle = styles.container;
+    const baseStyle = [styles.container, shadows.small];
     
     // Se a atividade estiver concluída, retorna o estilo base sem borda
     if (props.status === "DONE") {
@@ -146,9 +177,9 @@ export default function ToDoComponent(props: ToDoComponentProps) {
     const status = getExpirationStatus();
     switch (status) {
       case 'expired':
-        return [baseStyle, styles.containerExpired];
+        return [...baseStyle, styles.containerExpired];
       case 'warning':
-        return [baseStyle, styles.containerWarning];
+        return [...baseStyle, styles.containerWarning];
       default:
         return baseStyle;
     }
@@ -175,46 +206,57 @@ export default function ToDoComponent(props: ToDoComponentProps) {
       overshootLeft={false}
     >
       <View style={containerStyle()}>
-        <Text style={styles.textSmall}>Nome da atividade:</Text>
-        <Text style={styles.text} key="name">
-          {props.name}
-        </Text>
-        <Text style={styles.textSmall}>Descrição da atividade:</Text>
-        <Text style={styles.text} key="description">
-          {props.description}
-        </Text>
-        <Text style={styles.textSmall}>Status da atividade:</Text>
-        <Text style={styles.text} key="status">
-          {getStatus(props.status)}
-        </Text>
-        <Text style={styles.textSmall}>Tipo da atividade:</Text>
-        <Text style={styles.text} key="type">
-          {props.type}
-        </Text>
-        <Text style={styles.textSmall}>Prioridade da atividade:</Text>
-        <Text style={[styles.text]} key="priority">
-          {getPriority(props.priority)}
-        </Text>
-        <Text style={styles.textSmall}>Criado por:</Text>
-        <Text style={[styles.text, styles.textSmall]} key="userName">
-          {props.userName}
-        </Text>
-        <Text
-          style={[styles.text, styles.textSmall, styles.lastChild]}
-          key="date"
-        >
-          {formatDayAndHour(props.date)}
-        </Text>
-        {props.dateExpire !== null && (
-          <>
-            <Text
-              style={[styles.text, styles.textSmall, styles.lastChild]}
-              key="date"
-            >
-              {expireDate(props.dateExpire)}
-            </Text>
-          </>
-        )}
+        <View style={styles.header}>
+          <View style={styles.titleContainer}>
+            <Text style={styles.title}>{props.name}</Text>
+            <View style={[styles.statusBadge, { backgroundColor: getStatusColor(props.status) }]}>
+              <Text style={styles.statusText}>{getStatus(props.status)}</Text>
+            </View>
+          </View>
+          <View style={[styles.priorityBadge, { backgroundColor: getPriorityColor(props.priority) }]}>
+            <Text style={styles.priorityText}>{getPriority(props.priority)}</Text>
+          </View>
+        </View>
+
+        <View style={styles.content}>
+          <Text style={styles.description}>{props.description}</Text>
+        </View>
+
+        <View style={styles.footer}>
+          <View style={styles.footerItem}>
+            <FontAwesomeIcon icon={faUser} size={12} color={colors.textSecondary} />
+            <Text style={styles.footerText}>{props.userName}</Text>
+          </View>
+          
+          <View style={styles.footerItem}>
+            <FontAwesomeIcon icon={faCalendarAlt} size={12} color={colors.textSecondary} />
+            <Text style={styles.footerText}>{formatDayAndHour(props.date)}</Text>
+          </View>
+          
+          {props.dateExpire && (
+            <View style={styles.footerItem}>
+              <FontAwesomeIcon 
+                icon={faClock} 
+                size={12} 
+                color={getExpirationStatus() === 'expired' ? colors.error : 
+                       getExpirationStatus() === 'warning' ? colors.accent : 
+                       colors.textSecondary} 
+              />
+              <Text style={[
+                styles.footerText,
+                getExpirationStatus() === 'expired' ? styles.textExpired : 
+                getExpirationStatus() === 'warning' ? styles.textWarning : {}
+              ]}>
+                {expireDate(props.dateExpire)}
+              </Text>
+            </View>
+          )}
+          
+          <View style={styles.footerItem}>
+            <FontAwesomeIcon icon={faInfoCircle} size={12} color={colors.textSecondary} />
+            <Text style={styles.footerText}>{props.type}</Text>
+          </View>
+        </View>
       </View>
     </Swipeable>
   );
@@ -222,55 +264,114 @@ export default function ToDoComponent(props: ToDoComponentProps) {
 
 const styles = StyleSheet.create({
   container: {
-    backgroundColor: colors.darkGray,
-    padding: padding,
-    width: "100%",
-    marginTop: 0,
-    marginBottom: 10,
-    borderRadius: borderRadius,
-    borderWidth: 2,
-    borderColor: 'transparent', // Borda transparente por padrão
+    backgroundColor: colors.surface,
+    borderRadius: 12,
+    overflow: 'hidden',
+    marginBottom: spacing.medium,
+    borderLeftWidth: 4,
+    borderLeftColor: 'transparent',
   },
   containerWarning: {
-    borderColor: '#ff6b6b', // Vermelho claro para aviso
+    borderLeftColor: colors.accent,
   },
   containerExpired: {
-    borderColor: '#ff0000', // Vermelho forte para vencido
+    borderLeftColor: colors.error,
+  },
+  header: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    padding: spacing.medium,
+    borderBottomWidth: 1,
+    borderBottomColor: colors.divider,
+  },
+  titleContainer: {
+    flex: 1,
+    flexDirection: 'row',
+    alignItems: 'center',
+    flexWrap: 'wrap',
+  },
+  title: {
+    fontSize: fonts.size.large,
+    fontWeight: fonts.weight.semiBold as any,
+    color: colors.textPrimary,
+    marginRight: spacing.small,
+    flex: 1,
+  },
+  statusBadge: {
+    borderRadius: 4,
+    paddingHorizontal: spacing.small,
+    paddingVertical: spacing.xs,
+    marginTop: spacing.xs,
+  },
+  statusText: {
+    fontSize: fonts.size.xs,
+    color: colors.textLight,
+    fontWeight: fonts.weight.medium as any,
+  },
+  priorityBadge: {
+    borderRadius: 12,
+    paddingHorizontal: spacing.small,
+    paddingVertical: spacing.xs,
+    marginLeft: spacing.small,
+  },
+  priorityText: {
+    fontSize: fonts.size.xs,
+    color: colors.textLight,
+    fontWeight: fonts.weight.medium as any,
+  },
+  content: {
+    padding: spacing.medium,
+  },
+  description: {
+    fontSize: fonts.size.medium,
+    color: colors.textSecondary,
+    lineHeight: 22,
+  },
+  footer: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    padding: spacing.medium,
+    backgroundColor: colors.background,
+    borderTopWidth: 1,
+    borderTopColor: colors.divider,
+  },
+  footerItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginRight: spacing.medium,
+    marginBottom: spacing.small,
+  },
+  footerText: {
+    fontSize: fonts.size.xs,
+    color: colors.textSecondary,
+    marginLeft: spacing.xs,
+  },
+  textExpired: {
+    color: colors.error,
+    fontWeight: fonts.weight.medium as any,
+  },
+  textWarning: {
+    color: colors.accent,
+    fontWeight: fonts.weight.medium as any,
   },
   actionButton: {
     justifyContent: "center",
     alignItems: "center",
     width: 100,
-    height: "89%",
-    marginVertical: margin,
-    marginHorizontal: margin,
-    borderRadius: borderRadius,
+    height: "100%",
+    marginHorizontal: 1,
   },
-  deleteButton: {
-    backgroundColor: colors.red,
+  actionText: {
+    color: colors.textLight,
+    fontSize: fonts.size.small,
+    marginTop: spacing.xs,
+    fontWeight: fonts.weight.medium as any,
   },
   editButton: {
-    backgroundColor: colors.green,
-    marginLeft: margin,
+    backgroundColor: colors.primary,
   },
-  deleteText: {
-    color: colors.white,
-    fontWeight: "bold",
-    textAlign: "center",
-  },
-  text: {
-    color: colors.white,
-    fontSize: 16,
-    marginBottom: margin,
-  },
-  textSmall: {
-    color: colors.white,
-    fontSize: 12,
-  },
-  lastChild: {
-    marginBottom: 0,
-  },
-  priorityText: {
-    fontWeight: "bold",
+  deleteButton: {
+    backgroundColor: colors.error,
   },
 });
