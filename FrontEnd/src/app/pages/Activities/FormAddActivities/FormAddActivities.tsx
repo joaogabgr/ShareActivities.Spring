@@ -110,7 +110,12 @@ export default function FormAddActivities() {
   };
 
   const openDatePicker = () => {
-    setTempDate(expirationDate || new Date());
+    const today = new Date();
+    if (!expirationDate || expirationDate < today) {
+      setTempDate(today);
+    } else {
+      setTempDate(expirationDate);
+    }
     setShowDateModal(true);
   };
 
@@ -140,11 +145,37 @@ export default function FormAddActivities() {
   const generateDays = (month: number, year: number) => {
     // Pega o último dia do mês
     const lastDay = new Date(year, month + 1, 0).getDate();
+    const today = new Date();
     const days = [];
-    for (let i = 1; i <= lastDay; i++) {
+    
+    // Se for o mês e ano atual, começa do dia atual
+    // Se for um mês/ano anterior, não mostra nenhum dia
+    // Se for um mês/ano futuro, mostra todos os dias
+    if (year < today.getFullYear() || (year === today.getFullYear() && month < today.getMonth())) {
+      return [];
+    }
+    
+    const startDay = (year === today.getFullYear() && month === today.getMonth()) 
+      ? today.getDate() 
+      : 1;
+      
+    for (let i = startDay; i <= lastDay; i++) {
       days.push(i);
     }
     return days;
+  };
+
+  const generateAvailableMonths = (year: number) => {
+    const today = new Date();
+    const currentYear = today.getFullYear();
+    const currentMonth = today.getMonth();
+    
+    // Se for o ano atual, só mostra os meses a partir do mês atual
+    if (year === currentYear) {
+      return MONTHS.slice(currentMonth);
+    }
+    // Se for um ano futuro, mostra todos os meses
+    return MONTHS;
   };
 
   const getStatusLabel = (value: string) => {
@@ -466,34 +497,40 @@ export default function FormAddActivities() {
                   style={styles.datePickerScrollView}
                   showsVerticalScrollIndicator={false}
                 >
-                  {MONTHS.map((month, index) => (
-                    <TouchableOpacity
-                      key={`month-${index}`}
-                      style={[
-                        styles.datePickerItem,
-                        tempDate.getMonth() === index && styles.datePickerItemSelected,
-                      ]}
-                      onPress={() => {
-                        const newDate = new Date(tempDate);
-                        newDate.setMonth(index);
-                        // Ajusta para o último dia do mês se o dia atual for maior
-                        const lastDay = new Date(newDate.getFullYear(), index + 1, 0).getDate();
-                        if (newDate.getDate() > lastDay) {
-                          newDate.setDate(lastDay);
-                        }
-                        setTempDate(newDate);
-                      }}
-                    >
-                      <Text
+                  {generateAvailableMonths(tempDate.getFullYear()).map((month, index) => {
+                    const monthIndex = tempDate.getFullYear() === new Date().getFullYear() 
+                      ? new Date().getMonth() + index 
+                      : index;
+                      
+                    return (
+                      <TouchableOpacity
+                        key={`month-${monthIndex}`}
                         style={[
-                          styles.datePickerItemText,
-                          tempDate.getMonth() === index && styles.datePickerItemTextSelected,
+                          styles.datePickerItem,
+                          tempDate.getMonth() === monthIndex && styles.datePickerItemSelected,
                         ]}
+                        onPress={() => {
+                          const newDate = new Date(tempDate);
+                          newDate.setMonth(monthIndex);
+                          // Ajusta para o último dia do mês se o dia atual for maior
+                          const lastDay = new Date(newDate.getFullYear(), monthIndex + 1, 0).getDate();
+                          if (newDate.getDate() > lastDay) {
+                            newDate.setDate(lastDay);
+                          }
+                          setTempDate(newDate);
+                        }}
                       >
-                        {month}
-                      </Text>
-                    </TouchableOpacity>
-                  ))}
+                        <Text
+                          style={[
+                            styles.datePickerItemText,
+                            tempDate.getMonth() === monthIndex && styles.datePickerItemTextSelected,
+                          ]}
+                        >
+                          {month}
+                        </Text>
+                      </TouchableOpacity>
+                    );
+                  })}
                 </ScrollView>
               </View>
               
