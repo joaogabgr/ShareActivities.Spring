@@ -23,6 +23,7 @@ public class UpdateActivitiesController {
     @PutMapping("/update")
     public ResponseEntity<ResponseModelDTO> updateActivities(@RequestBody UpdateActivitiesDTO updateActivitiesDTO) throws SystemContextException {
         try {
+            System.out.println(updateActivitiesDTO);
             return ResponseEntity.ok(new ResponseModelDTO(updateActivitiesImpl.execute(updateActivitiesDTO)));
         } catch (Exception e) {
             throw new SystemContextException(e.getMessage());

@@ -11,7 +11,6 @@ LogBox.ignoreLogs(['[Reanimated]']);
 
 export default function Layout() {
   useEffect(() => {
-    // Configurar a StatusBar uma vez quando o componente é montado
     StatusBar.setBarStyle('light-content');
     StatusBar.setBackgroundColor(colors.primary);
   }, []);

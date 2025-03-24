@@ -23,7 +23,8 @@ import {
   faListCheck, 
   faTag, 
   faAlignLeft, 
-  faSave
+  faSave,
+  faFlag
 } from "@fortawesome/free-solid-svg-icons";
 import { UpdateActivities } from "@/src/types/Activities/UpdateActivities";
 import { AuthContext } from "@/src/contexts/AuthContext";
@@ -59,6 +60,7 @@ export default function FormEditActivities() {
   const [showDateModal, setShowDateModal] = useState(false);
   const [tempDate, setTempDate] = useState<Date>(new Date());
   const [priority, setPriority] = useState<"HIGH" | "MEDIUM" | "LOW">("MEDIUM");
+  const [daysForRecover, setDaysForRecover] = useState(0);
   const [status, setStatus] = useState<ActivitiesStatus>(ActivitiesStatus.PENDING);
   const [showStatusModal, setShowStatusModal] = useState(false);
   const [showPriorityModal, setShowPriorityModal] = useState(false);
@@ -131,9 +133,12 @@ export default function FormEditActivities() {
         name: title,
         description: description,
         status: status,
+        userId: authContext.user?.name || "",
         type: type,
         dateExpire: formattedDate ? formattedDate.toISOString() : null,
         priority: priority,
+        daysForRecover: daysForRecover,
+        familyId: ""
       };
 
       await links.updateActivity(updateActivity);
@@ -297,6 +302,22 @@ export default function FormEditActivities() {
                 </View>
               </View>
 
+              {/* Dias para recuperar */}
+              <View style={styles.formGroup}>
+                <Text style={styles.label}>Dias para recuperar</Text>
+                <View style={styles.inputContainer}>
+                  <FontAwesomeIcon icon={faFlag} size={20} color={colors.primary} style={styles.inputIcon} />
+                  <TextInput
+                  style={styles.input}
+                  placeholder="Digite a quantidade de dias para recuperar"
+                  value={daysForRecover.toString()}
+                  onChangeText={(text) => setDaysForRecover(Number(text.replace(/[^0-9]/g, '')))}
+                  keyboardType="numeric"
+                  placeholderTextColor={colors.disabled}
+                  />
+                </View>
+              </View>
+
               {/* Status */}
               <View style={styles.formGroup}>
                 <Text style={styles.label}>Status</Text>
@@ -391,7 +412,7 @@ export default function FormEditActivities() {
                   key={option.value}
                   style={[
                     styles.optionItem,
-                    status === option.value && styles.optionItemSelected,
+                    status === option.value as ActivitiesStatus && styles.optionItemSelected,
                   ]}
                   onPress={() => {
                     setStatus(option.value as ActivitiesStatus);

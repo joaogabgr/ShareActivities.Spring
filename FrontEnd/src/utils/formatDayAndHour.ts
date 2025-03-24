@@ -10,6 +10,16 @@ export const formatDayAndHour = (date: string | Date): string => {
     return `Criado no dia ${day}/${month}/${year} as ${hours}:${minutes}`;
 };
 
+export const formatDay = (date: string | Date): string => {
+    const dateObject = typeof date === 'string' ? new Date(date) : date;
+
+    const day = dateObject.getDate().toString().padStart(2, '0');
+    const month = (dateObject.getMonth() + 1).toString().padStart(2, '0');
+    const year = dateObject.getFullYear();
+
+    return `Atividade vai ser recuperada dia ${day}/${month}/${year}`;
+}
+
 export const expireDate = (date: string | Date): string => {
     const dateObject = typeof date === 'string' ? new Date(date) : date;
 

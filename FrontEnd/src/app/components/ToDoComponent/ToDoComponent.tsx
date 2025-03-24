@@ -6,7 +6,7 @@ import {
 } from "react-native";
 import { colors, fonts, shadows, spacing } from "@/src/globalCSS";
 import { ReadActivities } from "@/src/types/Activities/ReadActivities";
-import { expireDate, formatDayAndHour } from "@/src/utils/formatDayAndHour";
+import { expireDate, formatDay, formatDayAndHour } from "@/src/utils/formatDayAndHour";
 import { Swipeable } from "react-native-gesture-handler";
 import { links } from "@/src/api/api";
 import { ErrorAlertComponent } from "@/src/app/components/Alerts/AlertComponent";
@@ -251,6 +251,14 @@ export default function ToDoComponent(props: ToDoComponentProps) {
               </Text>
             </View>
           )}
+
+          {props.dayForRecover && (
+            <View style={styles.footerItem}>
+              <FontAwesomeIcon icon={faFlag} size={12} color={colors.textSecondary} />
+              <Text style={styles.footerText}>{formatDay(props.dayForRecover)}</Text>
+            </View>
+            )
+          }
           
           <View style={styles.footerItem}>
             <FontAwesomeIcon icon={faInfoCircle} size={12} color={colors.textSecondary} />
@@ -329,8 +337,7 @@ const styles = StyleSheet.create({
     lineHeight: 22,
   },
   footer: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
+    flexDirection: 'column',
     padding: spacing.medium,
     backgroundColor: colors.background,
     borderTopWidth: 1,
@@ -338,7 +345,7 @@ const styles = StyleSheet.create({
   },
   footerItem: {
     flexDirection: 'row',
-    alignItems: 'center',
+    alignItems: 'flex-start',
     marginRight: spacing.medium,
     marginBottom: spacing.small,
   },
@@ -359,7 +366,8 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     alignItems: "center",
     width: 100,
-    height: "100%",
+    height: "90%",
+    borderRadius: 12,
     marginHorizontal: 1,
   },
   actionText: {

@@ -22,7 +22,8 @@ import {
   faTasksAlt, 
   faListCheck, 
   faTag, 
-  faAlignLeft 
+  faAlignLeft, 
+  faFlag
 } from "@fortawesome/free-solid-svg-icons";
 import { CreateActivities } from "@/src/types/Activities/CreateActivities";
 import { AuthContext } from "@/src/contexts/AuthContext";
@@ -56,6 +57,7 @@ export default function FormAddActivities() {
   const [showDateModal, setShowDateModal] = useState(false);
   const [tempDate, setTempDate] = useState<Date>(new Date());
   const [priority, setPriority] = useState<"HIGH" | "MEDIUM" | "LOW">("MEDIUM");
+  const [daysForRecover, setDaysForRecover] = useState(0);
   const [showStatusModal, setShowStatusModal] = useState(false);
   const [showPriorityModal, setShowPriorityModal] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -87,7 +89,7 @@ export default function FormAddActivities() {
       type: type,
       dateExpire: formattedDate ? formattedDate.toISOString() : null,
       priority: priority,
-      daysForRecover: 0,
+      daysForRecover: daysForRecover,
       familyId: ""
     };
 
@@ -236,6 +238,22 @@ export default function FormAddActivities() {
                     value={type}
                     onChangeText={setType}
                     placeholderTextColor={colors.disabled}
+                  />
+                </View>
+              </View>
+
+              {/* Dias para recuperar */}
+              <View style={styles.formGroup}>
+                <Text style={styles.label}>Dias para recuperar</Text>
+                <View style={styles.inputContainer}>
+                  <FontAwesomeIcon icon={faFlag} size={20} color={colors.primary} style={styles.inputIcon} />
+                  <TextInput
+                  style={styles.input}
+                  placeholder="Digite a quantidade de dias para recuperar"
+                  value={daysForRecover.toString()}
+                  onChangeText={(text) => setDaysForRecover(Number(text.replace(/[^0-9]/g, '')))}
+                  keyboardType="numeric"
+                  placeholderTextColor={colors.disabled}
                   />
                 </View>
               </View>

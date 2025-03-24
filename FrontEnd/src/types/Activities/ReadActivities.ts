@@ -10,4 +10,5 @@ export type ReadActivities = {
     priority: string;
     type: string;
     dateExpire: string;
+    dayForRecover: string
 };

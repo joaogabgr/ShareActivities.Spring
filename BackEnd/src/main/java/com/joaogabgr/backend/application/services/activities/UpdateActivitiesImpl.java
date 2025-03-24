@@ -37,6 +37,10 @@ public class UpdateActivitiesImpl implements UpdateActivitiesUseCase {
                 throw new SystemContextException("Activity not found");
             }
 
+            if (updateActivitiesDTO.getDaysForRecover() != 0) {
+                activities.setDayForRecover(activities.getDateCreated().plusDays(updateActivitiesDTO.getDaysForRecover()));
+            }
+
             activitiesRepository.save(activities);
 
             return convertActivitiesToReadDTO.execute(activities);

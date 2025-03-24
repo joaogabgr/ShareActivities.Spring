@@ -1,6 +1,4 @@
-import { useContext } from "react";
 import { SafeAreaView, StyleSheet, Text, View, Image, ScrollView } from "react-native";
-import { AuthContext } from "@/src/contexts/AuthContext";
 import { colors, fonts, shadows, spacing } from "@/src/globalCSS";
 import { faList, faPeopleGroup, faTasks, faCalendarCheck } from "@fortawesome/free-solid-svg-icons";
 import Header from "../components/header/Header";
@@ -33,21 +31,6 @@ export default function Default() {
             onPress="/pages/tabs/ToDo/ToDo"
           />
 
-          <Models 
-            icon={faTasks} 
-            title="Atividades Recentes" 
-            color={colors.accent} 
-            description="Visualize as atividades recentes da sua família"
-            onPress="/pages/tabs/ToDo/ToDo"
-          />
-
-          <Models 
-            icon={faCalendarCheck} 
-            title="Planejamento" 
-            color={colors.primaryDark} 
-            description="Planeje atividades futuras e organize sua agenda"
-            onPress="/pages/tabs/ToDo/ToDo"
-          />
         </View>
       </ScrollView>
     </SafeAreaView>
