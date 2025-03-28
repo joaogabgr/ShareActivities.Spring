@@ -6,6 +6,7 @@ export type UpdateActivities = {
     userId: string;
     type: string;
     dateExpire?: string | null;
+    dateCreated: string;
     priority: string;
     daysForRecover: number;
     familyId: string;

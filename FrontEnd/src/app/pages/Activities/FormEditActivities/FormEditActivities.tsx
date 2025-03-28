@@ -57,6 +57,7 @@ export default function FormEditActivities() {
   const [description, setDescription] = useState("");
   const [type, setType] = useState("");
   const [expirationDate, setExpirationDate] = useState<Date | null>(null);
+  const [dateCreate, setDateCreate] = useState<Date>();
   const [showDateModal, setShowDateModal] = useState(false);
   const [tempDate, setTempDate] = useState<Date>(new Date());
   const [priority, setPriority] = useState<"HIGH" | "MEDIUM" | "LOW">("MEDIUM");
@@ -76,6 +77,7 @@ export default function FormEditActivities() {
         setTitle(parsedActivity.name);
         setDescription(parsedActivity.description);
         setStatus(parsedActivity.status);
+        setDateCreate(parsedActivity.date)
         
         // Configurar tipo se existir
         if (parsedActivity.type) {
@@ -89,6 +91,13 @@ export default function FormEditActivities() {
           expireDate.setHours(expireDate.getHours() - 3);
           setExpirationDate(expireDate);
           setTempDate(expireDate);
+        }
+
+        // Configurar dias para recuperar se existir
+        if (parsedActivity.dayForRecover) {
+          const dayForRecoverDate = new Date(parsedActivity.dayForRecover).getTime();
+          const activityDate = new Date(parsedActivity.date).getTime();
+          setDaysForRecover(Math.ceil((dayForRecoverDate - activityDate) / (1000 * 60 * 60 * 24)));
         }
         
         // Configurar prioridade se existir
@@ -178,6 +187,8 @@ export default function FormEditActivities() {
       formattedDate.setHours(23, 59, 59, 999);
     }
 
+    const formatedDateCreated = dateCreate ? new Date(dateCreate) : null;
+
     try {
       const updateActivity: UpdateActivities = {
         id: activity.id,
@@ -186,7 +197,8 @@ export default function FormEditActivities() {
         status: status,
         userId: authContext.user?.name || "",
         type: type,
-        dateExpire: formattedDate ? formattedDate.toISOString() : null,
+        dateExpire: formattedDate ? formattedDate.toISOString() : "",
+        dateCreated: formatedDateCreated ? formatedDateCreated.toISOString() : "",
         priority: priority,
         daysForRecover: daysForRecover,
         familyId: ""

@@ -22,6 +22,7 @@ public class UpdateActivitiesDTO implements DTO {
     private String familyId;
     private String type;
     private LocalDateTime dateExpire;
+    private LocalDateTime dateCreated;
     private Integer daysForRecover;
 
     @Override
@@ -31,8 +32,8 @@ public class UpdateActivitiesDTO implements DTO {
         activities.setName(name);
         activities.setDescription(description);
         activities.setStatus(ActivitiesStatus.valueOf(status));
-        activities.setDateCreated(LocalDateTime.now());
         activities.setDateExpire(dateExpire);
+        activities.setDateCreated(dateCreated);
         activities.setType(type);
         activities.setPriority(PriorityActivities.valueOf(priority));
         return activities;
@@ -41,6 +42,6 @@ public class UpdateActivitiesDTO implements DTO {
     @Override
     public boolean isValid() {
         return isNotNullOrEmpty(id) || isNotNullOrEmpty(name) || isNotNullOrEmpty(description) || isNotNullOrEmpty(status) || isNotNullOrEmpty(userId) ||
-                isNotNullOrEmpty(type) || isNotNullOrEmpty(priority);
+                isNotNullOrEmpty(type) || isNotNullOrEmpty(priority) || isNotNullOrEmpty(String.valueOf(dateCreated));
     }
 }
