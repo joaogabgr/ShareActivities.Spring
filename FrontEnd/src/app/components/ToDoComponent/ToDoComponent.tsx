@@ -233,7 +233,7 @@ export default function ToDoComponent(props: ToDoComponentProps) {
             <Text style={styles.footerText}>{formatDayAndHour(props.date)}</Text>
           </View>
           
-          {props.dateExpire && (
+          {props.dateExpire && props.status !== "DONE" && (
             <View style={styles.footerItem}>
               <FontAwesomeIcon 
                 icon={faClock} 

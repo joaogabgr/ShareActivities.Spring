@@ -1,4 +1,4 @@
-import { View, Text, StyleSheet, TextInput, TouchableOpacity, SafeAreaView } from "react-native";
+import { View, Text, StyleSheet, TextInput, TouchableOpacity, SafeAreaView, ActivityIndicator } from "react-native";
 import { useRouter } from "expo-router";
 import React, { useContext, useState } from "react";
 import { FontAwesomeIcon } from '@fortawesome/react-native-fontawesome';
@@ -8,6 +8,7 @@ import { AuthContext } from "@/src/contexts/AuthContext";
 import { api } from "@/src/api/api";
 import { ErrorAlertComponent } from "../../components/Alerts/AlertComponent";
 import KeyboardAvoidingContainer from "@/src/app/components/KeyboardAvoidingContainer/KeyboardAvoidingContainer";
+import { validateEmail, validatePassword, validateCPF, formatCPF, validateName } from "@/src/utils/validations";
 
 export default function Register() {
     const router = useRouter();
@@ -17,26 +18,69 @@ export default function Register() {
     const [cpf, setCpf] = useState('');
     const [password, setPassword] = useState('');
     const [confirmPassword, setConfirmPassword] = useState('');
+    const [isLoading, setIsLoading] = useState(false);
+    const [errors, setErrors] = useState<Record<string, string>>({});
+
+    const validateForm = (): boolean => {
+        const newErrors: Record<string, string> = {};
+
+        // Validação do nome
+        const nameValidation = validateName(name);
+        if (!nameValidation.isValid) {
+            newErrors.name = nameValidation.message;
+        }
+
+        // Validação do email
+        if (!validateEmail(email)) {
+            newErrors.email = "Email inválido";
+        }
+
+        // Validação do CPF
+        if (!validateCPF(cpf)) {
+            newErrors.cpf = "CPF inválido";
+        }
+
+        // Validação da senha
+        const passwordValidation = validatePassword(password);
+        if (!passwordValidation.isValid) {
+            newErrors.password = passwordValidation.message;
+        }
+
+        // Validação da confirmação de senha
+        if (password !== confirmPassword) {
+            newErrors.confirmPassword = "As senhas não coincidem";
+        }
+
+        setErrors(newErrors);
+        return Object.keys(newErrors).length === 0;
+    };
+
+    const handleCPFChange = (text: string) => {
+        const formattedCPF = formatCPF(text);
+        setCpf(formattedCPF);
+    };
 
     const registerHandle = async () => {
-        if (password !== confirmPassword) {
-            ErrorAlertComponent("Erro", "As senhas não coincidem");
+        if (!validateForm()) {
             return;
         }
 
-        const user = {
-            name,
-            email,
-            cpf,
-            password,
-            role: 'USER'
-        };
-
+        setIsLoading(true);
         try {
+            const user = {
+                name,
+                email,
+                cpf: cpf.replace(/[^\d]/g, ''),
+                password,
+                role: 'USER'
+            };
+
             await api.post('/auth/register', user);
             await authContext.login(email, password);
         } catch (error) {
-            ErrorAlertComponent("Erro", "Erro ao registrar");
+            ErrorAlertComponent("Erro", "Erro ao registrar. Tente novamente.");
+        } finally {
+            setIsLoading(false);
         }
     };
 
@@ -55,74 +99,109 @@ export default function Register() {
                     </View>
                     
                     <View style={[styles.formContainer, shadows.medium]}>
-                        <View style={styles.inputContainer}>
+                        <View style={[styles.inputContainer, errors.name && styles.inputError]}>
                             <FontAwesomeIcon icon={faUserPlus} size={20} color={colors.primary} />
                             <TextInput
                                 style={styles.input}
-                                onChangeText={text => setName(text)}
+                                onChangeText={text => {
+                                    setName(text);
+                                    if (errors.name) {
+                                        setErrors(prev => ({ ...prev, name: '' }));
+                                    }
+                                }}
                                 value={name}
                                 placeholder="Nome de usuário"
                                 placeholderTextColor={colors.disabled}
+                                maxLength={50}
                             />
                         </View>
+                        {errors.name && <Text style={styles.errorText}>{errors.name}</Text>}
                         
-                        <View style={styles.inputContainer}>
+                        <View style={[styles.inputContainer, errors.email && styles.inputError]}>
                             <FontAwesomeIcon icon={faEnvelope} size={20} color={colors.primary} />
                             <TextInput
                                 style={styles.input}
-                                onChangeText={text => setEmail(text)}
+                                onChangeText={text => {
+                                    setEmail(text);
+                                    if (errors.email) {
+                                        setErrors(prev => ({ ...prev, email: '' }));
+                                    }
+                                }}
                                 value={email}
                                 placeholder="Email"
                                 placeholderTextColor={colors.disabled}
                                 autoCapitalize="none"
                                 keyboardType="email-address"
+                                maxLength={100}
                             />
                         </View>
+                        {errors.email && <Text style={styles.errorText}>{errors.email}</Text>}
                         
-                        <View style={styles.inputContainer}>
+                        <View style={[styles.inputContainer, errors.cpf && styles.inputError]}>
                             <FontAwesomeIcon icon={faIdCard} size={20} color={colors.primary} />
                             <TextInput
                                 style={styles.input}
-                                onChangeText={text => setCpf(text)}
+                                onChangeText={handleCPFChange}
                                 value={cpf}
                                 placeholder="CPF"
                                 placeholderTextColor={colors.disabled}
                                 keyboardType="numeric"
+                                maxLength={14}
                             />
                         </View>
+                        {errors.cpf && <Text style={styles.errorText}>{errors.cpf}</Text>}
                         
-                        <View style={styles.inputContainer}>
+                        <View style={[styles.inputContainer, errors.password && styles.inputError]}>
                             <FontAwesomeIcon icon={faLock} size={20} color={colors.primary} />
                             <TextInput
                                 style={styles.input}
-                                onChangeText={text => setPassword(text)}
+                                onChangeText={text => {
+                                    setPassword(text);
+                                    if (errors.password) {
+                                        setErrors(prev => ({ ...prev, password: '' }));
+                                    }
+                                }}
                                 value={password}
                                 placeholder="Senha"
                                 placeholderTextColor={colors.disabled}
                                 secureTextEntry={true}
                                 autoCapitalize="none"
+                                maxLength={20}
                             />
                         </View>
+                        {errors.password && <Text style={styles.errorText}>{errors.password}</Text>}
                         
-                        <View style={styles.inputContainer}>
+                        <View style={[styles.inputContainer, errors.confirmPassword && styles.inputError]}>
                             <FontAwesomeIcon icon={faLock} size={20} color={colors.primary} />
                             <TextInput
                                 style={styles.input}
-                                onChangeText={text => setConfirmPassword(text)}
+                                onChangeText={text => {
+                                    setConfirmPassword(text);
+                                    if (errors.confirmPassword) {
+                                        setErrors(prev => ({ ...prev, confirmPassword: '' }));
+                                    }
+                                }}
                                 value={confirmPassword}
                                 placeholder="Confirmar senha"
                                 placeholderTextColor={colors.disabled}
                                 secureTextEntry={true}
                                 autoCapitalize="none"
+                                maxLength={20}
                             />
                         </View>
+                        {errors.confirmPassword && <Text style={styles.errorText}>{errors.confirmPassword}</Text>}
                         
                         <TouchableOpacity 
                             onPress={registerHandle} 
                             style={[styles.registerButton, shadows.small]}
                             activeOpacity={0.8}
+                            disabled={isLoading}
                         >
-                            <Text style={styles.buttonText}>Cadastrar</Text>
+                            {isLoading ? (
+                                <ActivityIndicator color={colors.textLight} />
+                            ) : (
+                                <Text style={styles.buttonText}>Cadastrar</Text>
+                            )}
                         </TouchableOpacity>
                     </View>
 
@@ -217,6 +296,16 @@ const styles = StyleSheet.create({
         color: colors.primary,
         fontSize: fonts.size.medium,
         fontWeight: fonts.weight.semiBold,
+        marginLeft: spacing.small,
+    },
+    inputError: {
+        borderColor: colors.error,
+    },
+    errorText: {
+        color: colors.error,
+        fontSize: fonts.size.small,
+        marginTop: -spacing.small,
+        marginBottom: spacing.small,
         marginLeft: spacing.small,
     },
 });

@@ -110,10 +110,61 @@ export default function FormEditActivities() {
   }, [params.activity]);
 
   const handleSubmit = async () => {
-    if (!title.trim() || !description.trim() || !activity) {
+    if (!activity) {
       ErrorAlertComponent(
-        "Campos obrigatórios",
-        "Por favor, preencha todos os campos marcados com *."
+        "Erro",
+        "Não foi possível encontrar os dados da atividade."
+      );
+      return;
+    }
+
+    // Validação mais específica dos campos obrigatórios
+    if (!title.trim()) {
+      ErrorAlertComponent(
+        "Campo obrigatório",
+        "Por favor, preencha o nome da atividade."
+      );
+      return;
+    }
+
+    if (!description.trim()) {
+      ErrorAlertComponent(
+        "Campo obrigatório",
+        "Por favor, preencha a descrição da atividade."
+      );
+      return;
+    }
+
+    if (!type.trim()) {
+      ErrorAlertComponent(
+        "Campo obrigatório",
+        "Por favor, preencha o tipo da atividade."
+      );
+      return;
+    }
+
+    // Validação de tamanho mínimo
+    if (title.trim().length < 3) {
+      ErrorAlertComponent(
+        "Nome muito curto",
+        "O nome da atividade deve ter pelo menos 3 caracteres."
+      );
+      return;
+    }
+
+    if (description.trim().length < 10) {
+      ErrorAlertComponent(
+        "Descrição muito curta",
+        "A descrição da atividade deve ter pelo menos 10 caracteres."
+      );
+      return;
+    }
+
+    // Validação de dias para recuperar
+    if (daysForRecover < 0) {
+      ErrorAlertComponent(
+        "Valor inválido",
+        "Os dias para recuperar não podem ser negativos."
       );
       return;
     }
@@ -262,6 +313,24 @@ export default function FormEditActivities() {
     }
   };
 
+  const handleTitleChange = (text: string) => {
+    if (text.length <= 255) {
+      setTitle(text);
+    }
+  };
+
+  const handleDescriptionChange = (text: string) => {
+    if (text.length <= 255) {
+      setDescription(text);
+    }
+  };
+
+  const handleTypeChange = (text: string) => {
+    if (text.length <= 255) {
+      setType(text);
+    }
+  };
+
   if (isLoading) {
     return (
       <SafeAreaView style={styles.container}>
@@ -295,10 +364,11 @@ export default function FormEditActivities() {
                     style={styles.input}
                     placeholder="Digite o nome da atividade"
                     value={title}
-                    onChangeText={setTitle}
+                    onChangeText={handleTitleChange}
                     placeholderTextColor={colors.disabled}
                   />
                 </View>
+                <Text style={styles.characterCount}>{title.length}/255</Text>
               </View>
 
               {/* Descrição */}
@@ -310,12 +380,13 @@ export default function FormEditActivities() {
                     style={styles.textarea}
                     placeholder="Digite a descrição da atividade"
                     value={description}
-                    onChangeText={setDescription}
+                    onChangeText={handleDescriptionChange}
                     multiline
                     numberOfLines={4}
                     placeholderTextColor={colors.disabled}
                   />
                 </View>
+                <Text style={styles.characterCount}>{description.length}/255</Text>
               </View>
 
               {/* Tipo */}
@@ -327,10 +398,11 @@ export default function FormEditActivities() {
                     style={styles.input}
                     placeholder="Digite o tipo da atividade"
                     value={type}
-                    onChangeText={setType}
+                    onChangeText={handleTypeChange}
                     placeholderTextColor={colors.disabled}
                   />
                 </View>
+                <Text style={styles.characterCount}>{type.length}/255</Text>
               </View>
 
               {/* Dias para recuperar */}
@@ -925,5 +997,11 @@ const styles = StyleSheet.create({
     color: colors.textLight,
     fontSize: fonts.size.medium,
     fontWeight: fonts.weight.semiBold,
+  },
+  characterCount: {
+    fontSize: fonts.size.small,
+    color: colors.textSecondary,
+    textAlign: 'right',
+    marginTop: spacing.xs,
   },
 }); 

@@ -31,7 +31,7 @@ ShareActivities é uma aplicação moderna para gerenciamento de tarefas familia
 
 ## 🔄 Sprints e Entregas
 
-### Sprint 1 - MVP Básico (31/03/2025)
+### Sprint 1 - MVP Básico (31/03/2025) ✅
 - **Sistema de Autenticação e Gerenciamento Básico de Tarefas**
   - Implementação completa do sistema de autenticação JWT com credenciais seguras
   - CRUD completo de tarefas pessoais:

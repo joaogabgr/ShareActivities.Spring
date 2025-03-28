@@ -143,11 +143,21 @@ export default function ToDo() {
     const getActivitiesByStatus = (status: string) => {
         const statusActivities = activities.filter(activity => activity.status === status);
         
-        // Ordenar por prioridade (HIGH > MEDIUM > LOW)
+        // Ordenar por prioridade (HIGH > MEDIUM > LOW) e depois por data de expiração
         return statusActivities.sort((a, b) => {
+            // Primeiro ordena por prioridade
             const priorityOrder = { HIGH: 3, MEDIUM: 2, LOW: 1 };
-            return (priorityOrder[b.priority as keyof typeof priorityOrder] || 0) - 
-                   (priorityOrder[a.priority as keyof typeof priorityOrder] || 0);
+            const priorityDiff = (priorityOrder[b.priority as keyof typeof priorityOrder] || 0) - 
+                               (priorityOrder[a.priority as keyof typeof priorityOrder] || 0);
+            
+            // Se a prioridade for igual, ordena por data de expiração
+            if (priorityDiff === 0) {
+                const dateA = new Date(a.dateExpire);
+                const dateB = new Date(b.dateExpire);
+                return dateA.getTime() - dateB.getTime();
+            }
+            
+            return priorityDiff;
         });
     };
 
