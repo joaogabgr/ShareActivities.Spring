@@ -22,6 +22,10 @@ public class CreateActivitiesDTO implements DTO {
     private String type;
     private LocalDateTime dateExpire;
     private Integer daysForRecover;
+    private String notes;
+    private String location;
+    private byte[] image;
+    private byte[] document;
 
     @Override
     public Activities toEntity() {
@@ -33,6 +37,9 @@ public class CreateActivitiesDTO implements DTO {
         activities.setDateExpire(dateExpire);
         activities.setType(type);
         activities.setPriority(PriorityActivities.valueOf(priority));
+        activities.setNotes(notes);
+        activities.setImage(image);
+        activities.setDocument(document);
         return activities;
     }
 

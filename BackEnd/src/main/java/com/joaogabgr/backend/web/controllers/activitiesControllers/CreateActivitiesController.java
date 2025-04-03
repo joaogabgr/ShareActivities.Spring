@@ -21,6 +21,7 @@ public class CreateActivitiesController {
     @PostMapping("/create")
     public ResponseEntity<ResponseModelDTO> createActivities(@RequestBody CreateActivitiesDTO createActivitiesDTO) throws SystemContextException {
        try {
+           System.out.println(createActivitiesDTO);
               return ResponseEntity.ok(new ResponseModelDTO(createActivitiesImpl.execute(createActivitiesDTO)));
          } catch (Exception e) {
               throw new SystemContextException(e.getMessage());

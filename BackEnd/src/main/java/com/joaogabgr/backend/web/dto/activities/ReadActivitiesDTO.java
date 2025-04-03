@@ -17,4 +17,7 @@ public class ReadActivitiesDTO {
     private String type;
     private String dateExpire;
     private String dayForRecover;
+    private String notes;
+    private String location;
+    private String latLog;
 }

@@ -1,5 +1,6 @@
 package com.joaogabgr.backend.application.services.activities;
 
+import com.joaogabgr.backend.application.operations.GetLatLog;
 import com.joaogabgr.backend.application.operations.activities.ConvertActivitiesToReadDTO;
 import com.joaogabgr.backend.application.operations.user.FindUser;
 import com.joaogabgr.backend.core.domain.models.Activities;
@@ -22,6 +23,8 @@ public class UpdateActivitiesImpl implements UpdateActivitiesUseCase {
 
     @Autowired
     private ConvertActivitiesToReadDTO convertActivitiesToReadDTO;
+    @Autowired
+    private GetLatLog getLatLog;
 
     @Override
     public ReadActivitiesDTO execute(UpdateActivitiesDTO updateActivitiesDTO) throws SystemContextException {
@@ -39,6 +42,12 @@ public class UpdateActivitiesImpl implements UpdateActivitiesUseCase {
 
             if (updateActivitiesDTO.getDaysForRecover() != 0) {
                 activities.setDayForRecover(activities.getDateCreated().plusDays(updateActivitiesDTO.getDaysForRecover()));
+            }
+
+            if (updateActivitiesDTO.getLocation() != null) {
+                GetLatLog.LatLngResult result = getLatLog.execute(updateActivitiesDTO.getLocation());
+                activities.setLatitude(result.getLatitude());
+                activities.setLongitude(result.getLongitude());
             }
 
             activitiesRepository.save(activities);

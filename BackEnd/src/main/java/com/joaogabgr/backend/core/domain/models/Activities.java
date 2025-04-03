@@ -8,6 +8,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import java.time.LocalDateTime;
+import java.util.Map;
 
 @Entity
 @Data
@@ -21,9 +22,21 @@ public class Activities {
     private String name;
     private String description;
     private String type;
+    private String notes;
     private LocalDateTime dateCreated;
     private LocalDateTime dateExpire;
     private LocalDateTime dayForRecover;
+
+    private Double latitude;
+    private Double longitude;
+
+    @Lob
+    @Column(columnDefinition = "LONGBLOB")
+    private byte[] image;
+
+    @Lob
+    @Column(columnDefinition = "LONGBLOB")
+    private byte[] document;
 
     @Enumerated(EnumType.STRING)
     private ActivitiesStatus status;
