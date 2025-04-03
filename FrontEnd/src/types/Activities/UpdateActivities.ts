@@ -10,4 +10,6 @@ export type UpdateActivities = {
     priority: string;
     daysForRecover: number;
     familyId: string;
+    notes: string;
+    location: string;
 }

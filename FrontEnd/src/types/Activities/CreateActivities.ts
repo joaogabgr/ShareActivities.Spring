@@ -8,4 +8,6 @@ export type CreateActivities = {
     priority: string;
     daysForRecover: number;
     familyId: string;
+    notes?: string | null;
+    location?: string | null;
 };

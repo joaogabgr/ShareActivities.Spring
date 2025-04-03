@@ -58,7 +58,7 @@ ShareActivities é uma aplicação moderna para gerenciamento de tarefas familia
   - Recursos multimídia completos:
     - Captura e upload direto de fotos como referência para execução de tarefas
     - Biblioteca compartilhada para anexos visuais com visualização otimizada
-    - Sistema seguro para compartilhamento de documentos e links relevantes às tarefas
+    - Sistema para compartilhamento de documentos e links relevantes às tarefas
   - Integração com GPS para notificações baseadas em localização:
     - Alertas inteligentes quando próximo a locais relacionados às tarefas pendentes
 
