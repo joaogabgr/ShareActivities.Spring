@@ -259,6 +259,22 @@ export default function ToDoComponent(props: ToDoComponentProps) {
             </View>
             )
           }
+
+          {props.location && (
+            <View style={styles.footerItem}>
+              <FontAwesomeIcon icon={faFlag} size={12} color={colors.textSecondary} />
+              <Text style={styles.footerText}>{props.location}</Text>
+            </View>
+            )
+          }
+
+          {props.notes && (
+            <View style={styles.footerItem}>
+              <FontAwesomeIcon icon={faFlag} size={12} color={colors.textSecondary} />
+              <Text style={styles.footerText}>{props.notes}</Text>
+            </View>
+            )
+          }
           
           <View style={styles.footerItem}>
             <FontAwesomeIcon icon={faInfoCircle} size={12} color={colors.textSecondary} />

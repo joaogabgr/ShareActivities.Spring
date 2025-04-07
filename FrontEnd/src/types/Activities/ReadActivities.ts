@@ -11,4 +11,6 @@ export type ReadActivities = {
     type: string;
     dateExpire: string;
     dayForRecover: string
+    notes: string;
+    location: string;
 };

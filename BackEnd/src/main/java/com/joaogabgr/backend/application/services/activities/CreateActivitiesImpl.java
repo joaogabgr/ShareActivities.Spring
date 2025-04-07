@@ -49,7 +49,7 @@ public class CreateActivitiesImpl implements CreateActivitiesUseCase {
                 activities.setDayForRecover(activities.getDateCreated().plusDays(createActivitiesDTO.getDaysForRecover()));
             }
 
-            if (createActivitiesDTO.getLocation() != null) {
+            if (!createActivitiesDTO.getLocation().isEmpty()) {
                 GetLatLog.LatLngResult result = getLatLog.execute(createActivitiesDTO.getLocation());
                 activities.setLatitude(result.getLatitude());
                 activities.setLongitude(result.getLongitude());

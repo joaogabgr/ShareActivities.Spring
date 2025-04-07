@@ -2,7 +2,7 @@ import axios, { AxiosError } from "axios";
 import { CreateActivities } from "../types/Activities/CreateActivities";
 import { UpdateActivities } from "../types/Activities/UpdateActivities";
 import { CreateFamilyDTO } from "../types/Family/CreateFamilyDTO";
-import { ErrorAlertComponent } from "@/src/app/components/Alerts/AlertComponent";
+import { ErrorAlertComponent } from "../app/components/Alerts/AlertComponent";
 
 interface ErrorResponse {
     status: number;
@@ -11,7 +11,7 @@ interface ErrorResponse {
 
 // Configuração base da API
 export const api = axios.create({
-    baseURL: "http:/192.168.1.102:8080",
+    baseURL: "http:/172.20.10.9:8080",
     timeout: 10000, // 10 segundos
     headers: {
         'Content-Type': 'application/json',

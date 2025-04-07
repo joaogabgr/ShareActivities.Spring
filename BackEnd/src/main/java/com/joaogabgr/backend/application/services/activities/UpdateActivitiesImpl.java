@@ -44,7 +44,7 @@ public class UpdateActivitiesImpl implements UpdateActivitiesUseCase {
                 activities.setDayForRecover(activities.getDateCreated().plusDays(updateActivitiesDTO.getDaysForRecover()));
             }
 
-            if (updateActivitiesDTO.getLocation() != null) {
+            if (!updateActivitiesDTO.getLocation().isEmpty()) {
                 GetLatLog.LatLngResult result = getLatLog.execute(updateActivitiesDTO.getLocation());
                 activities.setLatitude(result.getLatitude());
                 activities.setLongitude(result.getLongitude());

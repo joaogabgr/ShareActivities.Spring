@@ -298,6 +298,7 @@ export default function ActivityForm({ mode, activityData, onSuccess }: Activity
                 onChangeText={setNotes}
                 placeholder="Digite notas ou links relacionados à atividade"
                 icon={faAlignLeft}
+                isLinksField={true}
               />
 
               {/* Endereço */}
