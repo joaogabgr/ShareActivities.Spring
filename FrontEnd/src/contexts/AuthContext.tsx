@@ -7,6 +7,8 @@ import * as SecureStore from 'expo-secure-store';
 import { ErrorAlertComponent } from "../app/components/Alerts/AlertComponent";
 import * as Notifications from 'expo-notifications';
 import * as Device from 'expo-device'; // 👈 não esquece dessa importação
+import { initializeFirebase, getFCMToken, requestNotificationPermission } from "../utils/firebase";
+
 
 
 export const AuthContext = createContext<AuthContextType>({
@@ -24,37 +26,46 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
   const router = useRouter();
 
   useEffect(() => {
+    // Inicializa o Firebase ao carregar o componente
+    try {
+      initializeFirebase();
+      console.log('Firebase inicializado no AuthProvider');
+    } catch (error) {
+      console.error('Erro ao inicializar Firebase:', error);
+    }
     validateToken();
   }, []);
 
   const login = async (email: string, password: string) => {
     try {
-      let expoToken = '';
+      let pushToken = '';
 
-      // 👉 Pega o Expo Push Token se estiver em um dispositivo real
+      // 👉 Obter o token FCM do Firebase se estiver em um dispositivo real
       if (Device.isDevice) {
-        const { status: existingStatus } = await Notifications.getPermissionsAsync();
-        let finalStatus = existingStatus;
-
-        if (existingStatus !== 'granted') {
-          const { status } = await Notifications.requestPermissionsAsync();
-          finalStatus = status;
-        }
-
-        if (finalStatus === 'granted') {
-          const tokenData = await Notifications.getExpoPushTokenAsync();
-          expoToken = tokenData.data;
-          console.log('Expo Push Token:', expoToken);
-        } else {
-          console.log('Permissão de notificação negada');
+        try {
+          // Verifica se o Firebase está inicializado
+          initializeFirebase();
+          
+          // Solicita permissão para notificações
+          const permissionGranted = await requestNotificationPermission();
+          
+          if (permissionGranted) {
+            // Obtém o token FCM
+            pushToken = await getFCMToken();
+            console.log('Firebase FCM Token:', pushToken);
+          } else {
+            console.log('Permissão de notificação negada');
+          }
+        } catch (error) {
+          console.error('Erro ao configurar notificações:', error);
         }
       }
 
-      // 👉 Envia o token do expo no corpo da requisição
+      // 👉 Envia o token FCM no corpo da requisição
       const response = await api.post('/auth/login', {
         email,
         password,
-        expoToken
+        pushToken // Usando o token FCM em vez do expoToken
       });
 
       const token = response.data.model;

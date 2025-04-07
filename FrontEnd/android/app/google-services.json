@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "747582000139",
+    "project_id": "shareactivities-203c0",
+    "storage_bucket": "shareactivities-203c0.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:747582000139:android:ad07e0fdef665fcd27cb0e",
+        "android_client_info": {
+          "package_name": "com.joaogabgr.ToDoMobile"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBBpLGECNhM7ONeHnCtM_M5YAWdQBBnMIs"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
