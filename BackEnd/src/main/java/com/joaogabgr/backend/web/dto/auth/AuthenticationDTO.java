@@ -11,6 +11,7 @@ import lombok.NoArgsConstructor;
 public class AuthenticationDTO implements DTO {
     public String email;
     public String password;
+    public String expoToken;
 
     @Override
     public Object toEntity() {
