@@ -1,13 +1,13 @@
 package com.joaogabgr.backend.application.operations.Notifications;
 
 import org.springframework.http.*;
-import org.springframework.stereotype.Component;
+import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-@Component
+@Service
 public class PushNotificationService {
 
     private final RestTemplate restTemplate;
@@ -17,9 +17,13 @@ public class PushNotificationService {
     }
 
     public void sendPushNotification(String expoPushToken, String title, String body) {
+        if (expoPushToken == null || !expoPushToken.startsWith("ExponentPushToken")) {
+            System.err.println("❌ Token inválido ou nulo: " + expoPushToken);
+            return;
+        }
+
         String url = "https://exp.host/--/api/v2/push/send";
 
-        // Monta o corpo da requisição
         Map<String, Object> message = new HashMap<>();
         message.put("to", expoPushToken);
         message.put("sound", "default");
@@ -27,7 +31,6 @@ public class PushNotificationService {
         message.put("body", body);
         message.put("data", Map.of("extra", "informação opcional"));
 
-        // Configura os headers
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.APPLICATION_JSON);
         headers.setAccept(List.of(MediaType.APPLICATION_JSON));
@@ -35,9 +38,11 @@ public class PushNotificationService {
 
         HttpEntity<Map<String, Object>> request = new HttpEntity<>(message, headers);
 
-        // Envia a requisição
-        ResponseEntity<String> response = restTemplate.postForEntity(url, request, String.class);
-
-        System.out.println("Resposta da API Expo: " + response.getBody());
+        try {
+            ResponseEntity<String> response = restTemplate.postForEntity(url, request, String.class);
+        } catch (Exception e) {
+            System.err.println("❌ Erro ao enviar notificação: " + e.getMessage());
+            e.printStackTrace();
+        }
     }
 }

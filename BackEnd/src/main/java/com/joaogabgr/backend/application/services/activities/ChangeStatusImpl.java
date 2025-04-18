@@ -36,8 +36,8 @@ public class ChangeStatusImpl implements ChangeStatusUseCase {
 
     private void sendNotification(Activities activity) throws SystemContextException {
         String expoToken = getExpoToken.execute(activity.getUser().getEmail());
-        String title = "Activity Status Changed";
-        String message = "The status of your activity has been changed to " + activity.getStatus();
+        String title = "Status da atividade alterado";
+        String message = "Alterado o status da atividade " + activity.getName() + " para " + activity.getStatus().getLabel();
 
         pushNotificationService.sendPushNotification(expoToken, title, message);
     }

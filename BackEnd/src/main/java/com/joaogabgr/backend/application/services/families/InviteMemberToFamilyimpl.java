@@ -29,11 +29,6 @@ public class InviteMemberToFamilyimpl implements InviteMemberToFamilyUseCase {
         try {
             User invitedUser = findUser.execute(inviteMemberToFamilyDTO.getInvitedEmail());
 
-            boolean haveFamily = CheckUserHaveFamilyImpl.execute(inviteMemberToFamilyDTO.getInvitedEmail());
-            if (haveFamily) {
-                throw new SystemContextException("User already in family");
-            }
-
             User user = findUser.execute(inviteMemberToFamilyDTO.getUserEmail());
 
             Families families = findFamily.execute(inviteMemberToFamilyDTO.getFamilyId());

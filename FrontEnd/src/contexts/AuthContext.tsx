@@ -1,3 +1,4 @@
+import React from 'react';
 import { createContext, useEffect, useState } from "react";
 import { AuthContextType, AuthProviderProps, UserInfo } from "../types/authTypes";
 import { jwtDecode } from 'jwt-decode';
@@ -6,10 +7,7 @@ import { api } from "../api/api";
 import * as SecureStore from 'expo-secure-store';
 import { ErrorAlertComponent } from "../app/components/Alerts/AlertComponent";
 import * as Notifications from 'expo-notifications';
-import * as Device from 'expo-device'; // 👈 não esquece dessa importação
-import { initializeFirebase, getFCMToken, requestNotificationPermission } from "../utils/firebase";
-
-
+import * as Device from 'expo-device';
 
 export const AuthContext = createContext<AuthContextType>({
   isAuthenticated: false,
@@ -19,6 +17,14 @@ export const AuthContext = createContext<AuthContextType>({
   user: undefined
 });
 
+Notifications.setNotificationHandler({
+  handleNotification: async () => ({
+    shouldShowAlert: true, 
+    shouldPlaySound: true,
+    shouldSetBadge: false,
+  }),
+});
+
 export const AuthProvider = ({ children }: AuthProviderProps) => {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [user, setUser] = useState<UserInfo>();
@@ -26,62 +32,79 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
   const router = useRouter();
 
   useEffect(() => {
-    // Inicializa o Firebase ao carregar o componente
-    try {
-      initializeFirebase();
-      console.log('Firebase inicializado no AuthProvider');
-    } catch (error) {
-      console.error('Erro ao inicializar Firebase:', error);
-    }
-    validateToken();
+    const subscription = Notifications.addNotificationReceivedListener(notification => {
+    });
+  
+    return () => subscription.remove();
   }, []);
+  
+
+  async function registerForPushNotificationsAsync() {
+    try {
+      if (Device.isDevice) {
+        const { status: existingStatus } = await Notifications.getPermissionsAsync();
+        let finalStatus = existingStatus;
+        if (existingStatus !== 'granted') {
+          const { status } = await Notifications.requestPermissionsAsync();
+          finalStatus = status;
+        }
+        if (finalStatus !== 'granted') {
+          console.log('Permissão para notificações não concedida!');
+          return;
+        }
+  
+        console.log('Obtendo token de notificação...');
+        const tokenData = await Notifications.getExpoPushTokenAsync({
+          projectId: "8bb4b263-af83-4e90-a3d0-b4d1d5256812"
+        });
+        
+        console.log('Token de notificação Expo:', tokenData.data);
+        return tokenData.data;
+      } else {
+        console.log('Você deve usar um dispositivo físico para notificações push');
+      }
+    } catch (error) {
+      console.error('Erro ao registrar para notificações push:', error);
+      return null;
+    }
+  }
+  
 
   const login = async (email: string, password: string) => {
     try {
-      let pushToken = '';
-
-      // 👉 Obter o token FCM do Firebase se estiver em um dispositivo real
-      if (Device.isDevice) {
-        try {
-          // Verifica se o Firebase está inicializado
-          initializeFirebase();
-          
-          // Solicita permissão para notificações
-          const permissionGranted = await requestNotificationPermission();
-          
-          if (permissionGranted) {
-            // Obtém o token FCM
-            pushToken = await getFCMToken();
-            console.log('Firebase FCM Token:', pushToken);
-          } else {
-            console.log('Permissão de notificação negada');
-          }
-        } catch (error) {
-          console.error('Erro ao configurar notificações:', error);
-        }
-      }
-
-      // 👉 Envia o token FCM no corpo da requisição
+      const expoToken = await registerForPushNotificationsAsync();
+  
       const response = await api.post('/auth/login', {
         email,
         password,
-        pushToken // Usando o token FCM em vez do expoToken
+        expoToken
       });
-
+  
       const token = response.data.model;
-
+  
+      if (!token) {
+        throw new Error("Token não retornado no login");
+      }
+  
       api.defaults.headers['Authorization'] = `Bearer ${token}`;
       await SecureStore.setItemAsync('token', token);
-
+  
       const decodedToken = decodificador(token);
       const JsonUserInfos = decodedToken.sub ? JSON.parse(decodedToken.sub) : null;
-
+  
+      if (!JsonUserInfos) {
+        throw new Error("Informações do usuário não encontradas");
+      }
+  
       setUser(JsonUserInfos);
       setIsAuthenticated(true);
+      
+      // Redirecionar para a página principal
       router.replace('/pages/Default');
-    } catch (error) {
+    } catch (error: unknown) {
       console.error("Erro ao fazer login:", error);
-      ErrorAlertComponent("Erro", "Erro ao fazer login");
+      const errorMessage = error instanceof Error ? error.message : "Erro ao fazer login";
+      ErrorAlertComponent("Erro", errorMessage);
     }
   };
 
@@ -100,14 +123,16 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
     const token = await SecureStore.getItemAsync('token');
     if (token) {
       try {
-        const decodedToken = decodificador(token) as any;
+        const decodedToken = decodificador(token);
         const isExpired = decodedToken?.exp ? decodedToken.exp * 1000 < Date.now() : true;
 
+        // Se o token estiver expirado, deslogar o usuário
         if (isExpired) {
           await logout();
           return;
         }
 
+        // Se o token for válido, configurar o cabeçalho de autenticação
         api.defaults.headers['Authorization'] = `Bearer ${token}`;
         setUser(decodedToken.sub ? JSON.parse(decodedToken.sub) : null);
         setIsAuthenticated(true);
@@ -118,7 +143,6 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
       console.log("Nenhum token encontrado no SecureStore");
     }
   };
-
   return (
     <AuthContext.Provider value={{ isAuthenticated, login, logout, user, validateToken }}>
       {children}

@@ -1,5 +1,6 @@
 package com.joaogabgr.backend.core.domain.models;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -10,10 +11,10 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 public class FamiliesUsers {
-
     @EmbeddedId
     private FamiliesUsersId id = new FamiliesUsersId();
 
+    @JsonIgnore
     @ManyToOne
     @MapsId("userId")
     @JoinColumn(name = "user_id")

@@ -21,7 +21,6 @@ public class ChangeStatusController {
     @PutMapping("/changeStatus")
     public ResponseEntity<ResponseModelDTO> changeStatus(@RequestBody ChangeStatusDTO changeStatusDTO) throws SystemContextException {
         try {
-            changeStatusImpl.execute(changeStatusDTO);
             return ResponseEntity.ok(new ResponseModelDTO(changeStatusImpl.execute(changeStatusDTO)));
         } catch (Exception e) {
             throw new SystemContextException(e.getMessage());
