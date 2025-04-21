@@ -55,6 +55,7 @@ ShareActivities é uma aplicação moderna para gerenciamento de tarefas familia
     - Criação e gerenciamento de grupos familiares
     - Compartilhamento de tarefas entre membros
     - Edição colaborativa de tarefas compartilhadas
+    - Chat em tempo real entre membros dos grupos
   - Central de notificações avançada:
     - Notificação para novas tarefas atribuídas
     - Notificação para tarefas pendentes próximas do vencimento
@@ -67,9 +68,7 @@ ShareActivities é uma aplicação moderna para gerenciamento de tarefas familia
     - Alertas inteligentes quando próximo a locais relacionados às tarefas pendentes
 
 ### Sprint 3 - Recursos Avançados (26/05/2025)
-- **Produtividade e Comunicação Integrada**
-  - Plataforma de comunicação interna:
-    - Chat em tempo real entre membros dos grupos
+- **Produtividade**
   - Recursos de automação e produtividade:
     - Integração com aplicativo de produtividade
     - Sistema de comandos de voz para criação de tarefas
@@ -77,7 +76,6 @@ ShareActivities é uma aplicação moderna para gerenciamento de tarefas familia
     - Relatórios completos de produtividade individual e coletiva
     - Métricas detalhadas de tempo, conclusão e atrasos
     - Visualizações gráficas personalizáveis de desempenho
-    - Recomendações inteligentes para otimização de processos baseadas em padrões de uso
 
 ## 💡 Boas Práticas Implementadas
 
