@@ -20,4 +20,9 @@ public class ReadActivitiesDTO {
     private String notes;
     private String location;
     private String latLog;
+    private String linkUrl;
+    private String photoUrl;
+    private String documentUrl;
+    private String photoName;
+    private String documentName;
 }

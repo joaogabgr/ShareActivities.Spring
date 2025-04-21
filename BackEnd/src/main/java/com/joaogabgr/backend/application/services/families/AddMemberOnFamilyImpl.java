@@ -26,21 +26,17 @@ public class AddMemberOnFamilyImpl implements AddMemberOnFamilyUseCase {
     public void execute(AddMemberOnFamilyDTO addMemberOnFamilyDTO) throws SystemContextException {
         try {
             if(addMemberOnFamilyDTO.isValid()) {
-                throw new SystemContextException("Invalid data");
-            }
-
-            if(familiesUsersRepository.existsByUserEmail(addMemberOnFamilyDTO.getUserEmail())) {
-                throw new SystemContextException("User already in family");
+                throw new SystemContextException("Data invalida");
             }
 
             User user = findUser.execute(addMemberOnFamilyDTO.getUserEmail());
             if (user == null) {
-                throw new SystemContextException("User not found");
+                throw new SystemContextException("Usuario não encontrado");
             }
 
             Families families = findFamily.execute(addMemberOnFamilyDTO.getFamilyId());
             if (families == null) {
-                throw new SystemContextException("Family not found");
+                throw new SystemContextException("Familia não encontrada");
             }
 
             FamiliesUsersId familiesUsersId = new FamiliesUsersId();

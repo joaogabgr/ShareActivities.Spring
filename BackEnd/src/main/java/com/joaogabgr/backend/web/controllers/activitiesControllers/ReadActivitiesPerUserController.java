@@ -1,5 +1,6 @@
 package com.joaogabgr.backend.web.controllers.activitiesControllers;
 
+import com.joaogabgr.backend.application.services.activities.ReadActivitesPerGroupImpl;
 import com.joaogabgr.backend.application.services.activities.ReadActivitiesPerUserImpl;
 import com.joaogabgr.backend.web.dto.web.ResponseModelDTO;
 import com.joaogabgr.backend.web.exeption.SystemContextException;
@@ -16,11 +17,22 @@ public class ReadActivitiesPerUserController {
 
     @Autowired
     private ReadActivitiesPerUserImpl readActivitiesPerUserImpl;
+    @Autowired
+    private ReadActivitesPerGroupImpl readActivitesPerGroupImpl;
 
     @GetMapping("/list/{userID}")
     public ResponseEntity<ResponseModelDTO> readActivitiesPerUser(@PathVariable String userID) throws SystemContextException {
         try {
             return ResponseEntity.ok(new ResponseModelDTO(readActivitiesPerUserImpl.execute(userID)));
+        } catch (Exception e) {
+            throw new SystemContextException(e.getMessage());
+        }
+    }
+
+    @GetMapping("/listgroup/{familyId}")
+    public ResponseEntity<ResponseModelDTO> readActivitiesPerGroup(@PathVariable String familyId) throws SystemContextException {
+        try {
+            return ResponseEntity.ok(new ResponseModelDTO(readActivitesPerGroupImpl.execute(familyId)));
         } catch (Exception e) {
             throw new SystemContextException(e.getMessage());
         }

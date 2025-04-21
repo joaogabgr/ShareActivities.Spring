@@ -58,13 +58,11 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
           projectId: "8bb4b263-af83-4e90-a3d0-b4d1d5256812"
         });
         
-        console.log('Token de notificação Expo:', tokenData.data);
         return tokenData.data;
       } else {
         console.log('Você deve usar um dispositivo físico para notificações push');
       }
     } catch (error) {
-      console.error('Erro ao registrar para notificações push:', error);
       return null;
     }
   }
@@ -102,9 +100,6 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
       // Redirecionar para a página principal
       router.replace('/pages/Default');
     } catch (error: unknown) {
-      console.error("Erro ao fazer login:", error);
-      const errorMessage = error instanceof Error ? error.message : "Erro ao fazer login";
-      ErrorAlertComponent("Erro", errorMessage);
     }
   };
 
@@ -115,7 +110,6 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
       setUser(undefined);
       router.replace('/pages/auth/Login');
     } catch (error) {
-      console.error("Erro ao deslogar:", error);
     }
   };
 
@@ -137,7 +131,6 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
         setUser(decodedToken.sub ? JSON.parse(decodedToken.sub) : null);
         setIsAuthenticated(true);
       } catch (error) {
-        console.error("Erro ao decodificar o token:", error);
       }
     } else {
       console.log("Nenhum token encontrado no SecureStore");

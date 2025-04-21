@@ -3,10 +3,15 @@ import { faPlus } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-native-fontawesome";
 import { useRouter } from "expo-router";
 import { StyleSheet, TouchableOpacity } from "react-native";
-import { useContext } from "react";
+import React, { useContext } from "react";
 import { AuthContext } from "@/src/contexts/AuthContext";
 
-export default function AddActivitiesButton() {
+interface AddActivitiesButtonProps {
+    familyId?: string;
+    familyName?: string;
+}
+
+export default function AddActivitiesButton({ familyId, familyName }: AddActivitiesButtonProps) {
     const router = useRouter();
     const authContext = useContext(AuthContext);
 
@@ -15,7 +20,10 @@ export default function AddActivitiesButton() {
             router.replace('/pages/auth/Login');
             return;
         }
-        router.push('/pages/Activities/FormAddActivities/FormAddActivities');
+        router.push({
+            pathname: '/pages/Activities/FormAddActivities/FormAddActivities',
+            params: familyId ? { familyId, familyName } : undefined
+        });
     }
 
     return (

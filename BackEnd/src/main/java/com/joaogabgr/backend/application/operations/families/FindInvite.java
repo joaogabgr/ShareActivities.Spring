@@ -13,6 +13,6 @@ public class FindInvite {
 
     public Invites execute(String inviteId) throws SystemContextException {
         return inviteRepository.findById(inviteId).orElseThrow(
-            () -> new SystemContextException("Invite not found"));
+            () -> new SystemContextException("Convite não encontrado"));
     }
 }

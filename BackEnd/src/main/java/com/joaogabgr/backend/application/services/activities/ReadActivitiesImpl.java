@@ -21,6 +21,6 @@ public class ReadActivitiesImpl implements ReadActivitiesUseCase {
     public ReadActivitiesDTO execute(String activitiesId) throws SystemContextException {
         return activitiesRepository.findById(activitiesId)
                 .map(convertActivitiesToReadDTO::execute)
-                .orElseThrow(() -> new SystemContextException("Activity not found"));
+                .orElseThrow(() -> new SystemContextException("Atividade não encontrada"));
     }
 }

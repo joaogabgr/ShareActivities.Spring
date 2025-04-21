@@ -12,4 +12,10 @@ export type UpdateActivities = {
     familyId: string;
     notes: string;
     location: string;
+    latLog?: string | null;
+    documentUrl?: string | null;
+    photoUrl?: string | null;
+    linkUrl?: string | null;
+    documentName?: string | null;
+    photoName?: string | null;
 }

@@ -1,6 +1,7 @@
 import { colors, fonts, shadows, spacing } from "@/src/globalCSS";
 import { FontAwesomeIcon } from "@fortawesome/react-native-fontawesome";
 import { useRouter } from "expo-router";
+import React from "react";
 import { StyleSheet, Text, TouchableOpacity, View } from "react-native";
 
 interface ModelsProps {
@@ -13,9 +14,8 @@ interface ModelsProps {
 
 export default function Models({ icon, title, color, onPress, description }: ModelsProps) {
     const router = useRouter();
-
     const handlePress = () => {
-        router.push(onPress);
+        router.push(onPress as any);
     }
 
     return (

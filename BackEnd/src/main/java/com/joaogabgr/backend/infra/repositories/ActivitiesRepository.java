@@ -9,6 +9,9 @@ import java.util.List;
 
 public interface ActivitiesRepository extends JpaRepository<Activities, String> {
 
-    @Query("SELECT a FROM Activities a WHERE a.user.email = :userEmail")
-    List<Activities> findByUserEmail(@Param("userEmail") String userEmail);
+    @Query("SELECT a FROM Activities a WHERE a.user.email = :userEmail AND a.family IS NULL")
+    List<Activities> findByUserEmailAndFamilyIsNull(@Param("userEmail") String userEmail);
+
+    @Query("SELECT a FROM Activities a WHERE a.family.id = :familyId")
+    List<Activities> findByFamilyId(@Param("familyId") String familyId);
 }

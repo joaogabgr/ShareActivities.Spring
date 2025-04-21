@@ -7,11 +7,14 @@ import {
   SafeAreaView,
   ScrollView,
   ActivityIndicator,
+  Image,
+  Alert,
+  Linking,
 } from "react-native";
 import Header from "../../components/header/Header";
 import { colors, fonts, shadows, spacing } from "@/src/globalCSS";
 import { useRouter } from "expo-router";
-import { links } from "@/src/api/api";
+import { links as apiLinks } from "@/src/api/api";
 import { ErrorAlertComponent } from "@/src/app/components/Alerts/AlertComponent";
 import { FontAwesomeIcon } from "@fortawesome/react-native-fontawesome";
 import {
@@ -20,6 +23,11 @@ import {
   faAlignLeft,
   faFlag,
   faSave,
+  faFile,
+  faImage,
+  faLink,
+  faXmark,
+  faUpload,
 } from "@fortawesome/free-solid-svg-icons";
 import { CreateActivities } from "@/src/types/Activities/CreateActivities";
 import { UpdateActivities } from "@/src/types/Activities/UpdateActivities";
@@ -29,14 +37,18 @@ import DatePicker from "../DatePicker/DatePicker";
 import StatusPicker from "../StatusPicker/StatusPicker";
 import PriorityPicker from "../PriorityPicker/PriorityPicker";
 import FormField from "../FormField/FormField";
+import * as DocumentPicker from 'expo-document-picker';
+import * as ImagePicker from 'expo-image-picker';
 
 interface ActivityFormProps {
   mode: "create" | "edit";
   activityData?: any; // Dados da atividade para edição
   onSuccess?: () => void;
+  familyId?: string; // ID da família quando estiver criando uma atividade para um grupo
+  familyName?: string; // Nome da família quando estiver criando uma atividade para um grupo
 }
 
-export default function ActivityForm({ mode, activityData, onSuccess }: ActivityFormProps) {
+export default function ActivityForm({ mode, activityData, onSuccess, familyId, familyName }: ActivityFormProps) {
   const router = useRouter();
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
@@ -48,6 +60,13 @@ export default function ActivityForm({ mode, activityData, onSuccess }: Activity
   const [dateCreate, setDateCreate] = useState<Date | undefined>(undefined);
   const [priority, setPriority] = useState<string>("MEDIUM");
   const [daysForRecover, setDaysForRecover] = useState(0);
+  
+  // Estados para os novos campos
+  const [documentUrl, setDocumentUrl] = useState<string | null>(null);
+  const [documentName, setDocumentName] = useState<string | null>(null);
+  const [photoUrl, setPhotoUrl] = useState<string | null>(null);
+  const [links, setLinks] = useState<string[]>([]);
+  
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isLoading, setIsLoading] = useState(mode === "edit");
   const [activity, setActivity] = useState<any>(null);
@@ -63,6 +82,21 @@ export default function ActivityForm({ mode, activityData, onSuccess }: Activity
         setDateCreate(activityData.date ? new Date(activityData.date) : undefined);
         setNotes(activityData.notes || "");
         setLocation(activityData.location || "");
+        
+        // Configurar anexos se existirem
+        setDocumentUrl(activityData.documentUrl || null);
+        setPhotoUrl(activityData.photoUrl || null);
+        
+        // Carregar links
+        if (activityData.linkUrl) {
+          setLinks(activityData.linkUrl.split(';').filter((link: string) => link.trim() !== ''));
+        }
+        
+        // Extrair o nome do documento da URL, se existir
+        if (activityData.documentUrl) {
+          const parts = activityData.documentUrl.split('/');
+          setDocumentName(parts[parts.length - 1]);
+        }
         
         // Configurar tipo se existir
         if (activityData.type) {
@@ -90,17 +124,111 @@ export default function ActivityForm({ mode, activityData, onSuccess }: Activity
         }
       } catch (error) {
         console.error("Erro ao processar dados da atividade:", error);
-        ErrorAlertComponent(
-          "Erro",
-          "Não foi possível carregar os dados da atividade."
-        );
       } finally {
         setIsLoading(false);
       }
     } else {
       setIsLoading(false);
     }
-  }, [mode, activityData]);
+  }, [mode, activityData, familyId]);
+
+  // Funções para lidar com anexos
+  const selectDocument = async () => {
+    try {
+      const result = await DocumentPicker.getDocumentAsync({
+        type: ['application/pdf', 'application/msword'],
+        copyToCacheDirectory: true,
+      });
+      
+      if (result.canceled === false) {
+        // Guardar o nome e a URI do documento
+        setDocumentName(result.assets[0].name);
+        setDocumentUrl(result.assets[0].uri);
+      }
+    } catch (error) {
+      console.error('Erro ao selecionar documento:', error);
+      ErrorAlertComponent('Erro', 'Não foi possível selecionar o documento.');
+    }
+  };
+
+  const selectImage = async () => {
+    try {
+      const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
+      
+      if (status !== 'granted') {
+        ErrorAlertComponent('Permissão negada', 'Precisamos de permissão para acessar sua galeria de fotos.');
+        return;
+      }
+      
+      const result = await ImagePicker.launchImageLibraryAsync({
+        mediaTypes: ImagePicker.MediaTypeOptions.Images,
+        allowsEditing: true,
+        aspect: [4, 3],
+        quality: 0.5,
+      });
+      
+      if (!result.canceled) {
+        // Salvar o URI para renderização da imagem
+        setPhotoUrl(result.assets[0].uri);
+      }
+    } catch (error) {
+      console.error('Erro ao selecionar imagem:', error);
+      ErrorAlertComponent('Erro', 'Não foi possível selecionar a imagem.');
+    }
+  };
+
+  const addLink = () => {
+    if (links.length >= 3) {
+      ErrorAlertComponent('Limite atingido', 'Você já adicionou o máximo de 3 links permitidos.');
+      return;
+    }
+    
+    Alert.prompt(
+      "Adicionar Link",
+      "Insira a URL completa (incluindo http:// ou https://)",
+      [
+        {
+          text: "Cancelar",
+          style: "cancel"
+        },
+        {
+          text: "Adicionar",
+          onPress: (url) => {
+            if (!url) {
+              return;
+            }
+            
+            // Validação simples de URL
+            if (!url.startsWith('http://') && !url.startsWith('https://')) {
+              ErrorAlertComponent('URL inválida', 'A URL deve começar com http:// ou https://');
+              return;
+            }
+            
+            setLinks([...links, url]);
+          }
+        }
+      ],
+      "plain-text",
+      "",
+      "url"
+    );
+  };
+
+  const removeLink = (index: number) => {
+    const updatedLinks = [...links];
+    updatedLinks.splice(index, 1);
+    setLinks(updatedLinks);
+  };
+
+  const openLink = (url: string) => {
+    Linking.canOpenURL(url).then(supported => {
+      if (supported) {
+        Linking.openURL(url);
+      } else {
+        ErrorAlertComponent('Erro', 'Não é possível abrir esta URL: ' + url);
+      }
+    });
+  };
 
   const validateForm = () => {
     // Validação mais específica dos campos obrigatórios
@@ -171,7 +299,81 @@ export default function ActivityForm({ mode, activityData, onSuccess }: Activity
       formattedDate.setHours(23, 59, 59, 999);
     }
 
+    // Juntar os links com ponto e vírgula
+    const formattedLinks = links.length > 0 ? links.join(';') : null;
+
     try {
+      // Upload dos arquivos e obtenção das URLs
+      let photoUrlServer = null;
+      let photoNameServer = null;
+      let documentUrlServer = null;
+      let documentNameServer = null;
+
+      // Upload de foto se existir
+      if (photoUrl) {
+        const photoFormData = new FormData();
+        
+        // Cria um nome curto para o arquivo para evitar URLs longas
+        const shortPhotoName = `photo_${Date.now().toString().slice(-6)}.jpg`;
+        
+        // Cria um arquivo para upload
+        const photoFile = {
+          uri: photoUrl,
+          name: shortPhotoName,
+          type: 'image/jpeg'
+        };
+        
+        // @ts-ignore - TypeScript não reconhece a estrutura corretamente, mas funciona
+        photoFormData.append('file', photoFile);
+        
+        const photoResponse = await fetch(`${apiLinks.API_URL}/api/upload/file`, {
+          method: 'POST',
+          body: photoFormData,
+          headers: {
+            'Accept': 'application/json',
+          },
+        });
+        
+        if (photoResponse.ok) {
+          const photoData = await photoResponse.json();
+          photoUrlServer = photoData.url;
+          photoNameServer = photoData.fileName;
+        }
+      }
+      
+      // Upload de documento se existir
+      if (documentUrl && documentName) {
+        const documentFormData = new FormData();
+        
+        // Cria um nome curto para o arquivo para evitar URLs longas
+        const docExt = documentName.endsWith('.pdf') ? 'pdf' : 'doc';
+        const shortDocName = `doc_${Date.now().toString().slice(-6)}.${docExt}`;
+        
+        // Cria um arquivo para upload
+        const documentFile = {
+          uri: documentUrl,
+          name: shortDocName,
+          type: documentName.endsWith('.pdf') ? 'application/pdf' : 'application/msword'
+        };
+        
+        // @ts-ignore - TypeScript não reconhece a estrutura corretamente, mas funciona
+        documentFormData.append('file', documentFile);
+        
+        const documentResponse = await fetch(`${apiLinks.API_URL}/api/upload/file`, {
+          method: 'POST',
+          body: documentFormData,
+          headers: {
+            'Accept': 'application/json',
+          },
+        });
+        
+        if (documentResponse.ok) {
+          const documentData = await documentResponse.json();
+          documentUrlServer = documentData.url;
+          documentNameServer = documentData.fileName;
+        }
+      }
+
       if (mode === "create") {
         // Criar nova atividade
         const newActivity: CreateActivities = {
@@ -183,14 +385,19 @@ export default function ActivityForm({ mode, activityData, onSuccess }: Activity
           dateExpire: formattedDate ? formattedDate.toISOString() : null,
           priority: priority,
           daysForRecover: daysForRecover,
-          familyId: "",
+          familyId: familyId || "",
           notes: notes,
           location: location,
+          documentUrl: documentUrlServer,
+          photoUrl: photoUrlServer,
+          documentName: documentNameServer,
+          photoName: photoNameServer,
+          linkUrl: formattedLinks,
         };
 
-        await links.createActivity(newActivity);
+        await apiLinks.createActivity(newActivity);
       } else if (mode === "edit" && activity) {
-        // Atualizar atividade existente
+        const activityFamilyId = familyId || "";
         const formatedDateCreated = dateCreate ? new Date(dateCreate) : null;
 
         const updateActivity: UpdateActivities = {
@@ -204,32 +411,40 @@ export default function ActivityForm({ mode, activityData, onSuccess }: Activity
           dateCreated: formatedDateCreated ? formatedDateCreated.toISOString() : "",
           priority: priority,
           daysForRecover: daysForRecover,
-          familyId: "",
+          familyId: activityFamilyId,
           notes: notes,
           location: location,
+          documentUrl: documentUrlServer,
+          photoUrl: photoUrlServer,
+          documentName: documentNameServer,
+          photoName: photoNameServer,
+          linkUrl: formattedLinks,
         };
-
-        await links.updateActivity(updateActivity);
+        await apiLinks.updateActivity(updateActivity);
       }
 
-      // Redirecionar para a lista de atividades com parâmetro de atualização
       if (onSuccess) {
         onSuccess();
       } else {
-        router.push({
-          pathname: "/pages/tabs/ToDo/ToDo",
-          params: { refresh: Date.now().toString() },
-        });
+        if (familyId) {
+          router.push({
+            pathname: "/pages/tabs/ToDo/ToDo",
+            params: { 
+              refresh: Date.now().toString(),
+              familyId: familyId,
+              familyName: familyName
+            },
+          });
+        } else {
+          router.push({
+            pathname: "/pages/tabs/ToDo/ToDo",
+            params: { refresh: Date.now().toString() },
+          });
+        }
       }
     } catch (error) {
-      const errorMessage = mode === "create" 
-        ? "Não foi possível criar a atividade. Tente novamente mais tarde."
-        : "Ocorreu um erro ao atualizar a atividade. Tente novamente.";
-      
-      ErrorAlertComponent(
-        `Erro ao ${mode === "create" ? "criar" : "atualizar"} atividade`,
-        errorMessage
-      );
+      console.error("Erro ao salvar atividade:", error);
+      ErrorAlertComponent("Erro", "Não foi possível salvar a atividade. Tente novamente.");
     } finally {
       setIsSubmitting(false);
     }
@@ -258,6 +473,7 @@ export default function ActivityForm({ mode, activityData, onSuccess }: Activity
           <View style={styles.content}>
             <Text style={styles.title}>
               {mode === "create" ? "Nova Atividade" : "Editar Atividade"}
+              {familyName ? ` - ${familyName}` : ""}
             </Text>
 
             <View style={[styles.formContainer, shadows.medium]}>
@@ -338,6 +554,133 @@ export default function ActivityForm({ mode, activityData, onSuccess }: Activity
                 onDateChange={setExpirationDate}
                 label="Data de expiração"
               />
+
+              {/* Seção de Anexos */}
+              <View style={styles.attachmentsSection}>
+                <Text style={styles.attachmentsTitle}>Anexos</Text>
+                <Text style={styles.attachmentsSubtitle}>Adicione até um documento, foto e links</Text>
+                
+                {/* Documento */}
+                <View style={styles.attachmentItem}>
+                  <View style={styles.attachmentHeader}>
+                    <View style={styles.attachmentTitleContainer}>
+                      <FontAwesomeIcon icon={faFile} size={16} color={colors.primary} />
+                      <Text style={styles.attachmentTypeTitle}>Documento</Text>
+                    </View>
+                    
+                    {!documentUrl ? (
+                      <TouchableOpacity
+                        style={styles.attachButton}
+                        onPress={selectDocument}
+                      >
+                        <FontAwesomeIcon icon={faUpload} size={14} color={colors.primary} />
+                        <Text style={styles.attachButtonText}>Adicionar</Text>
+                      </TouchableOpacity>
+                    ) : (
+                      <TouchableOpacity
+                        style={[styles.attachButton, styles.removeButton]}
+                        onPress={() => {
+                          setDocumentUrl(null);
+                          setDocumentName(null);
+                        }}
+                      >
+                        <FontAwesomeIcon icon={faXmark} size={14} color={colors.error} />
+                        <Text style={[styles.attachButtonText, styles.removeButtonText]}>Remover</Text>
+                      </TouchableOpacity>
+                    )}
+                  </View>
+                  
+                  {documentUrl && documentName && (
+                    <View style={styles.attachmentPreview}>
+                      <FontAwesomeIcon icon={faFile} size={20} color={colors.primary} />
+                      <Text style={styles.documentName} numberOfLines={1} ellipsizeMode="middle">
+                        {documentName}
+                      </Text>
+                    </View>
+                  )}
+                </View>
+                
+                {/* Foto */}
+                <View style={styles.attachmentItem}>
+                  <View style={styles.attachmentHeader}>
+                    <View style={styles.attachmentTitleContainer}>
+                      <FontAwesomeIcon icon={faImage} size={16} color={colors.primary} />
+                      <Text style={styles.attachmentTypeTitle}>Foto</Text>
+                    </View>
+                    
+                    {!photoUrl ? (
+                      <TouchableOpacity
+                        style={styles.attachButton}
+                        onPress={selectImage}
+                      >
+                        <FontAwesomeIcon icon={faUpload} size={14} color={colors.primary} />
+                        <Text style={styles.attachButtonText}>Adicionar</Text>
+                      </TouchableOpacity>
+                    ) : (
+                      <TouchableOpacity
+                        style={[styles.attachButton, styles.removeButton]}
+                        onPress={() => setPhotoUrl(null)}
+                      >
+                        <FontAwesomeIcon icon={faXmark} size={14} color={colors.error} />
+                        <Text style={[styles.attachButtonText, styles.removeButtonText]}>Remover</Text>
+                      </TouchableOpacity>
+                    )}
+                  </View>
+                  
+                  {photoUrl && (
+                    <Image 
+                      source={{ uri: photoUrl }} 
+                      style={styles.imagePreview} 
+                      resizeMode="cover"
+                    />
+                  )}
+                </View>
+                
+                {/* Link */}
+                <View style={styles.attachmentItem}>
+                  <View style={styles.attachmentHeader}>
+                    <View style={styles.attachmentTitleContainer}>
+                      <FontAwesomeIcon icon={faLink} size={16} color={colors.primary} />
+                      <Text style={styles.attachmentTypeTitle}>Links (máx. 3)</Text>
+                    </View>
+                    
+                    {links.length < 3 && (
+                      <TouchableOpacity
+                        style={styles.attachButton}
+                        onPress={addLink}
+                      >
+                        <FontAwesomeIcon icon={faUpload} size={14} color={colors.primary} />
+                        <Text style={styles.attachButtonText}>Adicionar</Text>
+                      </TouchableOpacity>
+                    )}
+                  </View>
+                  
+                  {links.length > 0 ? (
+                    <View style={styles.linksContainer}>
+                      {links.map((url, index) => (
+                        <View key={index} style={styles.linkItem}>
+                          <TouchableOpacity 
+                            style={styles.linkPreview}
+                            onPress={() => openLink(url)}
+                          >
+                            <Text style={styles.linkText} numberOfLines={1} ellipsizeMode="middle">
+                              {url}
+                            </Text>
+                          </TouchableOpacity>
+                          <TouchableOpacity
+                            style={styles.removeLinkButton}
+                            onPress={() => removeLink(index)}
+                          >
+                            <FontAwesomeIcon icon={faXmark} size={14} color={colors.error} />
+                          </TouchableOpacity>
+                        </View>
+                      ))}
+                    </View>
+                  ) : (
+                    <Text style={styles.noLinksText}>Nenhum link adicionado</Text>
+                  )}
+                </View>
+              </View>
 
               {/* Botões */}
               <View style={styles.buttonContainer}>
@@ -450,5 +793,116 @@ const styles = StyleSheet.create({
   },
   submitButtonIcon: {
     marginRight: spacing.xs,
+  },
+  attachmentsSection: {
+    marginTop: spacing.large,
+    borderTopWidth: 1,
+    borderTopColor: colors.divider,
+    paddingTop: spacing.medium,
+  },
+  attachmentsTitle: {
+    fontSize: fonts.size.large,
+    fontWeight: fonts.weight.semiBold,
+    color: colors.textPrimary,
+    marginBottom: spacing.xs,
+  },
+  attachmentsSubtitle: {
+    fontSize: fonts.size.small,
+    color: colors.textSecondary,
+    marginBottom: spacing.medium,
+  },
+  attachmentItem: {
+    marginBottom: spacing.medium,
+    borderWidth: 1,
+    borderColor: colors.divider,
+    borderRadius: 8,
+    padding: spacing.medium,
+    backgroundColor: colors.background,
+  },
+  attachmentHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: spacing.small,
+  },
+  attachmentTitleContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  attachmentTypeTitle: {
+    fontSize: fonts.size.medium,
+    fontWeight: fonts.weight.medium,
+    color: colors.textPrimary,
+    marginLeft: spacing.small,
+  },
+  attachButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingVertical: spacing.xs,
+    paddingHorizontal: spacing.small,
+    borderRadius: 4,
+    borderWidth: 1,
+    borderColor: colors.primary,
+    backgroundColor: colors.surface,
+  },
+  attachButtonText: {
+    fontSize: fonts.size.xs,
+    color: colors.primary,
+    marginLeft: spacing.xs,
+  },
+  removeButton: {
+    borderColor: colors.error,
+  },
+  removeButtonText: {
+    color: colors.error,
+  },
+  attachmentPreview: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    padding: spacing.small,
+    backgroundColor: colors.surface,
+    borderRadius: 4,
+  },
+  documentName: {
+    flex: 1,
+    fontSize: fonts.size.small,
+    color: colors.textPrimary,
+    marginLeft: spacing.small,
+  },
+  imagePreview: {
+    width: '100%',
+    height: 150,
+    borderRadius: 4,
+    backgroundColor: colors.surface,
+  },
+  linksContainer: {
+    marginTop: spacing.small,
+  },
+  linkItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: spacing.small,
+    backgroundColor: colors.surface,
+    borderRadius: 4,
+    paddingVertical: spacing.xs,
+    paddingHorizontal: spacing.small,
+  },
+  linkPreview: {
+    flex: 1,
+  },
+  linkText: {
+    fontSize: fonts.size.small,
+    color: colors.primary,
+    textDecorationLine: 'underline',
+  },
+  removeLinkButton: {
+    padding: spacing.xs,
+  },
+  noLinksText: {
+    fontSize: fonts.size.small,
+    color: colors.textSecondary,
+    fontStyle: 'italic',
+    textAlign: 'center',
+    padding: spacing.small,
   },
 });

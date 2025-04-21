@@ -24,7 +24,7 @@ export const expireDate = (date: string | Date): string => {
     const dateObject = typeof date === 'string' ? new Date(date) : date;
 
     // Ajusta o fuso horário subtraindo 3 horas
-    const adjustedDate = new Date(dateObject.getTime() - 3 * 60 * 60 * 1000);
+    const adjustedDate = new Date(dateObject.getTime() + 0 * 60 * 60 * 1000);
 
     const day = adjustedDate.getDate().toString().padStart(2, '0');
     const month = (adjustedDate.getMonth() + 1).toString().padStart(2, '0');

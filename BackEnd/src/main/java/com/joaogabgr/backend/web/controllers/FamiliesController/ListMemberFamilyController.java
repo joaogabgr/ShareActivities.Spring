@@ -1,8 +1,7 @@
 package com.joaogabgr.backend.web.controllers.FamiliesController;
 
-import com.joaogabgr.backend.application.services.families.CheckUserIsAdminImpl;
+import com.joaogabgr.backend.application.services.families.ListMemberToFamily;
 import com.joaogabgr.backend.web.dto.web.ResponseModelDTO;
-import com.joaogabgr.backend.web.exeption.SystemContextException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -12,17 +11,16 @@ import org.springframework.web.bind.annotation.RestController;
 
 @RestController
 @RequestMapping("/families")
-public class CheckUserIsAdminController {
+public class ListMemberFamilyController {
     @Autowired
-    private CheckUserIsAdminImpl checkUserIsAdminImpl;
+    private ListMemberToFamily listMemberToFamily;
 
-    @GetMapping("/checkUserIsAdmin/{userEmail}")
-    public ResponseEntity<ResponseModelDTO> checkUserIsAdmin(@PathVariable String userEmail) throws SystemContextException {
+    @GetMapping("/listMemberFamily/{familyId}")
+    public ResponseEntity<ResponseModelDTO> listMemberFamily(@PathVariable String familyId) {
         try {
-            return ResponseEntity.ok(new ResponseModelDTO(checkUserIsAdminImpl.execute(userEmail)));
+            return ResponseEntity.ok(new ResponseModelDTO(listMemberToFamily.execute(familyId)));
         } catch (Exception e) {
-            throw new SystemContextException(e.getMessage());
+            return ResponseEntity.badRequest().body(new ResponseModelDTO(e.getMessage()));
         }
     }
-
 }

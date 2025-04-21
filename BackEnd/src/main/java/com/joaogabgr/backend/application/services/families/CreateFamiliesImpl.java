@@ -21,7 +21,7 @@ public class CreateFamiliesImpl implements CreateFamilieUseCase {
     public CreateFamiliesDTO execute(CreateFamiliesDTO createFamiliesDTO) throws SystemContextException {
         try {
             if(createFamiliesDTO.isValid()) {
-                throw new SystemContextException("Invalid data");
+                throw new SystemContextException("Data invalida");
             }
 
             Families families = new Families();

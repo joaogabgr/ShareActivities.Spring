@@ -13,4 +13,5 @@ export type AuthProviderProps = {
 export type UserInfo = {
       name: string;
       role: string;
+      user: string;
   }

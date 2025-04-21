@@ -41,7 +41,6 @@ export default function Login() {
     try {
       await authContext.login(email, password);
     } catch (error) {
-      ErrorAlertComponent("Erro", "Email ou senha inválidos. Tente novamente.");
     } finally {
       setIsLoading(false);
     }
@@ -52,11 +51,7 @@ export default function Login() {
       <KeyboardAvoidingContainer formType="auth">
         <View style={styles.content}>
           <View style={styles.logoContainer}>
-            <FontAwesomeIcon 
-              icon={faUser} 
-              size={60} 
-              color={colors.primary} 
-            />
+            <Image source={require('../../../../assets/images/favicon.png')}/>
             <Text style={styles.title}>Share Activities</Text>
             <Text style={styles.subtitle}>Faça login para continuar</Text>
           </View>

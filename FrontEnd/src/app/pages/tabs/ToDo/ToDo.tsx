@@ -7,10 +7,11 @@ import { colors, fonts, shadows, spacing } from "@/src/globalCSS";
 import { useCallback, useContext, useEffect, useState } from "react";
 import { SafeAreaView, StyleSheet, Text, View, Alert, ScrollView, TouchableOpacity, ActivityIndicator } from "react-native";
 import { FontAwesomeIcon } from "@fortawesome/react-native-fontawesome";
-import { faChevronDown, faChevronUp } from "@fortawesome/free-solid-svg-icons";
+import { faArrowLeft, faChevronDown, faChevronUp } from "@fortawesome/free-solid-svg-icons";
 import { useRouter, useLocalSearchParams } from "expo-router";
 import AddActivitiesButton from "@/src/app/components/AddActivitiesButton/AddActivitiesButton";
 import { ReadActivities } from "@/src/types/Activities/ReadActivities";
+import React from "react";
 
 type SectionStatus = "PENDING" | "IN_PROGRESS" | "DONE";
 
@@ -29,48 +30,28 @@ export default function ToDo() {
     const authContext = useContext(AuthContext);
     const router = useRouter();
     const params = useLocalSearchParams();
+    const familyId = params.familyId as string;
+    const familyName = params.familyName as string;
+    const isGroupView = !!familyId;
 
-    // useEffect(() => {
-    //     const checkUser = async () => {
-    //         const response = await links.checkUserHaveFamily(authContext.user?.name || '');
-    //         if (response.data.model === false) {
-    //             Alert.alert(
-    //                 "Família não encontrada",
-    //                 "Você não possui uma família cadastrada. Deseja criar uma agora?",
-    //                 [
-    //                     {
-    //                         text: "Cancelar",
-    //                         onPress: () => router.replace("/pages/Default"),
-    //                         style: "default"
-    //                     },
-    //                     {
-    //                         text: "Criar",
-    //                         onPress: () => router.push("/pages/Family/FormAddFamily/FormAddFamily"),
-    //                         style: "default"
-    //                     }
-    //                 ]
-    //             )
-    //         }
-    //     }
-
-    //     checkUser();
-    // } , []);
-
-    const ReadActivities = useCallback(async () => {
+    const fetchActivities = useCallback(async () => {
         setLoading(true);
         try {
-            const response = await links.readActivities(authContext.user?.name || '');
+            let response;
+            if (isGroupView) {
+                // Usar a rota de grupo se estivermos visualizando tarefas de um grupo
+                response = await links.readGroupActivities(familyId);
+            } else {
+                // Usar a rota normal para tarefas pessoais
+                response = await links.readActivities(authContext.user?.name || '');
+            }
             setActivities(response.data.model);
         } catch (error) {
-            console.error(error);
-            ErrorAlertComponent(
-                "Erro ao carregar atividades",
-                "Não foi possível carregar as atividades. Tente novamente mais tarde."
-            );
+            ErrorAlertComponent('Erro', 'Não foi possível carregar as atividades.');
         } finally {
             setLoading(false);
         }
-    }, [authContext.user?.name]);
+    }, [authContext.user?.name, isGroupView, familyId]);
 
     const toggleSection = (status: SectionStatus) => {
         setExpandedSections(prev => ({
@@ -100,7 +81,6 @@ export default function ToDo() {
                             await links.deleteActivity(id);
                             setActivities(activities.filter(activity => activity.id !== id));
                         } catch (error) {
-                            ErrorAlertComponent("Erro ao excluir atividade", "Não foi possível excluir a atividade, tente novamente mais tarde.");
                         }
                     },
                     style: "destructive"
@@ -128,9 +108,19 @@ export default function ToDo() {
                     onPress: async () => {
                         const activityToEdit = activities.find(activity => activity.id === id);
                         if (activityToEdit) {
+                            // Se estamos em modo de visualização de grupo, adiciona o ID e nome da família
+                            const params: any = { 
+                                activity: JSON.stringify(activityToEdit) 
+                            };
+                            
+                            if (isGroupView) {
+                                params.familyId = familyId;
+                                params.familyName = familyName;
+                            }
+                            
                             router.push({
                                 pathname: "/pages/Activities/FormEditActivities/FormEditActivities",
-                                params: { activity: JSON.stringify(activityToEdit) }
+                                params
                             });
                         }
                     },
@@ -203,7 +193,7 @@ export default function ToDo() {
                                 {...activity}
                                 onDelete={handleDelete}
                                 onEdit={handleEdit}
-                                onStatusChange={ReadActivities}
+                                onStatusChange={fetchActivities}
                             />
                         ))}
                     </View>
@@ -214,15 +204,20 @@ export default function ToDo() {
 
     useEffect(() => {
         if (authContext.isAuthenticated) {
-            ReadActivities();
+            fetchActivities();
         }
-    }, [ReadActivities, params.refresh, authContext.isAuthenticated]);
+    }, [fetchActivities, params.refresh, authContext.isAuthenticated]);
 
     return (
         <SafeAreaView style={styles.container}>
             <Header />
             <View style={styles.contentContainer}>
-                <Text style={styles.pageTitle}>Minhas Tarefas</Text>
+                {isGroupView ? (
+                    <Text style={styles.pageTitle}>Tarefas do Grupo - {familyName}</Text>
+                ) : (
+                    <Text style={styles.pageTitle}>Minhas Tarefas</Text>
+                )}
+                
                 {loading ? (
                     <View style={styles.loadingContainer}>
                         <ActivityIndicator size="large" color={colors.primary} />
@@ -241,7 +236,10 @@ export default function ToDo() {
                     </ScrollView>
                 )}
             </View>
-            <AddActivitiesButton />
+            <AddActivitiesButton 
+                familyId={isGroupView ? familyId : undefined} 
+                familyName={isGroupView ? familyName : undefined}
+            />
         </SafeAreaView>
     );
 }
@@ -255,12 +253,41 @@ const styles = StyleSheet.create({
         flex: 1,
         padding: spacing.medium,
     },
+    titleRow: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        justifyContent: 'space-between',
+        marginBottom: spacing.small,
+    },
+    backButton: {
+        width: 40,
+        height: 40,
+        borderRadius: 20,
+        justifyContent: 'center',
+        alignItems: 'center',
+        backgroundColor: colors.surface,
+        ...shadows.small,
+    },
     pageTitle: {
         fontSize: fonts.size.xxl,
         fontWeight: fonts.weight.bold as any,
         color: colors.textPrimary,
         marginBottom: spacing.medium,
         paddingHorizontal: spacing.medium,
+    textAlign: 'center',
+
+    },
+    groupTitle: {
+        fontSize: fonts.size.xl,
+        fontWeight: fonts.weight.bold as any,
+        color: colors.textPrimary,
+    },
+    groupName: {
+        fontSize: fonts.size.large,
+        fontWeight: fonts.weight.semiBold as any,
+        color: colors.primary,
+        marginBottom: spacing.medium,
+        textAlign: 'center',
     },
     scrollView: {
         flex: 1,

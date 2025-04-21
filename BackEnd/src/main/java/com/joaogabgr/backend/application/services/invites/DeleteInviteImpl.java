@@ -1,4 +1,4 @@
-package com.joaogabgr.backend.application.services.families;
+package com.joaogabgr.backend.application.services.invites;
 
 import com.joaogabgr.backend.application.operations.families.FindInvite;
 import com.joaogabgr.backend.core.useCase.families.DeleteInviteUseCase;

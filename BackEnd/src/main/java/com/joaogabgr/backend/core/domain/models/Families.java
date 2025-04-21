@@ -20,6 +20,10 @@ public class Families {
     private String name;
 
     @JsonIgnore
+    @OneToMany(mappedBy = "roomId", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<Chat> chats;
+
+    @JsonIgnore
     @OneToMany(mappedBy = "family", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<FamiliesUsers> familiesUsers;
 

@@ -11,16 +11,22 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 @Service
-public class DeleteMemberOnFamilyImpl implements DeleteMemberOnFamilyUseCase {
+public class DeleteMemberOnFamilyImpl {
     @Autowired
     private FamiliesUsersRepository familiesUsersRepository;
+    @Autowired
+    private CheckUserIsAdminImpl checkUserIsAdminImpl;
 
-    public void execute(String familyId, String userEmail) throws SystemContextException {
+    public void execute(String familyId, String userEmail, String emailUserDeleted) throws SystemContextException {
         try {
-            FamiliesUsers familiesUsers = familiesUsersRepository.findByUserEmail(userEmail);
+            FamiliesUsers familiesUsers = familiesUsersRepository.findByUserEmailAndFamilyId(emailUserDeleted, familyId);
+
+            if (!checkUserIsAdminImpl.execute(userEmail, familyId)) {
+                throw new SystemContextException("Usuário não é admin");
+            }
 
             if (!familiesUsers.getFamily().getId().equals(familyId)) {
-                throw new SystemContextException("User not in this family");
+                throw new SystemContextException("Usuário não pertence a essa família");
             }
 
             familiesUsersRepository.delete(familiesUsers);

@@ -7,7 +7,6 @@ import com.joaogabgr.backend.web.dto.DTO;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-import java.io.IOException;
 import java.time.LocalDateTime;
 
 @Data
@@ -24,8 +23,11 @@ public class CreateActivitiesDTO implements DTO {
     private Integer daysForRecover;
     private String notes;
     private String location;
-    private byte[] image;
-    private byte[] document;
+    private String linkUrl;
+    private String photoUrl;
+    private String documentUrl;
+    private String photoName;
+    private String documentName;
 
     @Override
     public Activities toEntity() {
@@ -38,8 +40,11 @@ public class CreateActivitiesDTO implements DTO {
         activities.setType(type);
         activities.setPriority(PriorityActivities.valueOf(priority));
         activities.setNotes(notes);
-        activities.setImage(image);
-        activities.setDocument(document);
+        activities.setImageUrl(photoUrl);
+        activities.setDocumentUrl(documentUrl);
+        activities.setImageName(photoName);
+        activities.setDocumentName(documentName);
+        activities.setLinkUrl(linkUrl);
         return activities;
     }
 

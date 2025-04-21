@@ -23,11 +23,11 @@ public class ReadActivitiesPerUserImpl implements ReadActivitiesPerUserUseCase {
     @Override
     public List<ReadActivitiesDTO> execute(String userEmail) throws SystemContextException {
         try {
-            return activitiesRepository.findByUserEmail(userEmail).stream()
+            return activitiesRepository.findByUserEmailAndFamilyIsNull(userEmail).stream()
                     .map(convertActivitiesToReadDTO::execute)
                     .collect(Collectors.toList());
         } catch (Exception e) {
-            throw new SystemContextException("Error reading activities for user with ID: " + userEmail + ", " + e.getMessage());
+            throw new SystemContextException("Erro ao ler a atividade de: " + userEmail + ", " + e.getMessage());
         }
     }
 }

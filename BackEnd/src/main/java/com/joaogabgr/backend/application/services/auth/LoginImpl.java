@@ -25,7 +25,7 @@ public class LoginImpl implements LoginUseCase {
     public String login(AuthenticationDTO data) throws SystemContextException {
         try {
             if (data.isValid()) {
-                throw new SystemContextException("Invalid data");
+                throw new SystemContextException("Data invalida");
             }
 
             var usernamePassword = new UsernamePasswordAuthenticationToken(data.getEmail(), data.getPassword());
@@ -41,7 +41,7 @@ public class LoginImpl implements LoginUseCase {
 
     private void saveExpoToken(String token, User user) throws SystemContextException {
         try {
-            User user1 = userRepository.findById(user.getId()).orElseThrow(() -> new SystemContextException("User not found"));
+            User user1 = userRepository.findById(user.getId()).orElseThrow(() -> new SystemContextException("Usuario não encontrado"));
 
             user1.setExpoToken(token);
 

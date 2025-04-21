@@ -10,4 +10,10 @@ export type CreateActivities = {
     familyId: string;
     notes?: string | null;
     location?: string | null;
+    latLog?: string | null;
+    documentUrl?: string | null;
+    photoUrl?: string | null;
+    linkUrl?: string | null;
+    documentName?: string | null;
+    photoName?: string | null;
 };

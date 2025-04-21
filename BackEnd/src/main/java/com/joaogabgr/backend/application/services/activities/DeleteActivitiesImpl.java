@@ -17,11 +17,11 @@ public class DeleteActivitiesImpl implements DeleteActivitiesUseCase {
     public String execute(String activitiesId) throws SystemContextException {
         try {
             if (!activitiesRepository.existsById(activitiesId)) {
-                throw new SystemContextException("Activity not found");
+                throw new SystemContextException("Atividade não encontrada");
             }
 
             activitiesRepository.deleteById(activitiesId);
-            return "Activity deleted successfully";
+            return "Atividade deletada com sucesso";
         } catch (Exception e) {
             throw new SystemContextException(e.getMessage());
         }

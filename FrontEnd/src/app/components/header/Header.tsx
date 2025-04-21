@@ -3,6 +3,7 @@ import { colors, fonts, shadows, spacing } from "@/src/globalCSS";
 import { faPeopleRoof, faSignOutAlt } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-native-fontawesome";
 import { useRouter } from "expo-router";
+import React from "react";
 import { useContext } from "react";
 import { StyleSheet, Text, TouchableOpacity, View } from "react-native";
 

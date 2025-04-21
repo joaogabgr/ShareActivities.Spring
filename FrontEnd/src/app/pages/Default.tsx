@@ -3,6 +3,7 @@ import { colors, fonts, shadows, spacing } from "@/src/globalCSS";
 import { faList, faPeopleGroup, faTasks, faCalendarCheck } from "@fortawesome/free-solid-svg-icons";
 import Header from "../components/header/Header";
 import Models from "../components/Models/Models";
+import React from "react";
 
 export default function Default() {    
   return (
@@ -17,9 +18,9 @@ export default function Default() {
         <View style={styles.modelsContainer}>
           <Models 
             icon={faPeopleGroup} 
-            title="Minha Família" 
+            title="Meus Grupos" 
             color={colors.primary}
-            description="Gerencie os membros da sua família e configure compartilhamentos" 
+            description="Veja seus grupos de atividades e compartilhe com seus amigos" 
             onPress='/pages/tabs/MyFamily/MyFamily' 
           />
           

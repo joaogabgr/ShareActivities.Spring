@@ -43,7 +43,6 @@ export default function FormField({
   // Função para abrir o link
   const handleOpenLink = (url: string) => {
     Linking.openURL(url).catch((err) => {
-      console.error('Erro ao abrir o link:', err);
     });
   };
 

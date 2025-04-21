@@ -32,6 +32,7 @@ public class User implements UserDetails {
     @Column(unique = true, nullable = false)
     private String email;
 
+    @JsonIgnore
     @Column()
     private String expoToken;
 
@@ -62,7 +63,8 @@ public class User implements UserDetails {
     public String getPayload() {
         String name = getUsername();
         String role = getRole().toString();
-        Object payload = Map.of("name", name, "role", role);
+        String user = getName();
+        Object payload = Map.of("name", name, "role", role, "user", user);
         Gson gson = new Gson();
         return String.format(gson.toJson(payload));
     }

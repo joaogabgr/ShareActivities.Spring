@@ -1,11 +1,9 @@
-import { Alert, Button } from 'react-native';
+import { Alert } from "react-native";
 
-export const ErrorAlertComponent = (title: string, msg: string) => {
-  Alert.alert(
-    title,
-    msg,
-    [
-      { text: "OK" }
-    ]
-  );
+export const ErrorAlertComponent = (title: string, message: string) => {
+  Alert.alert(title, message);
+};
+
+export const SuccessAlertComponent = (title: string, message: string) => {
+  Alert.alert(title, message);
 };

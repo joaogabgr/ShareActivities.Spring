@@ -12,6 +12,7 @@ ShareActivities é uma aplicação moderna para gerenciamento de tarefas familia
 - **Maven** - Gerenciamento de dependências
 - **PostgreSQL** - Banco de dados relacional
 - **JPA/Hibernate** - ORM para persistência de dados
+- **Sistema de Arquivos** - Para armazenamento de uploads de arquivos
 
 ### Frontend
 - **React Native** - Framework para desenvolvimento mobile
@@ -20,6 +21,7 @@ ShareActivities é uma aplicação moderna para gerenciamento de tarefas familia
 - **Axios** - Cliente HTTP para requisições à API
 - **React Navigation** - Navegação entre telas
 - **AsyncStorage** - Armazenamento local
+- **Expo Document Picker & Image Picker** - Para seleção de documentos e imagens
 
 ## 📱 Funcionalidades Principais
 - Gerenciamento de tarefas (CRUD)
@@ -28,6 +30,8 @@ ShareActivities é uma aplicação moderna para gerenciamento de tarefas familia
 - Sistema de notificações
 - Compartilhamento de tarefas
 - Gerenciamento de receitas
+- Upload e visualização de documentos e imagens
+- Compartilhamento de links entre membros
 
 ## 🔄 Sprints e Entregas
 
@@ -99,6 +103,26 @@ ShareActivities é uma aplicação moderna para gerenciamento de tarefas familia
 - **Repository Pattern** - Abstração do acesso a dados
 - **Service Layer** - Lógica de negócios isolada
 - **Exception Handling** - Tratamento adequado de erros
+
+## 📂 Sistema de Gerenciamento de Arquivos
+
+O ShareActivities implementa um sistema eficiente de gerenciamento de anexos para atividades, permitindo aos usuários:
+
+### Funcionalidades de Anexos
+- **Upload de Imagens** - Anexar fotos às atividades para referência visual
+- **Upload de Documentos** - Anexar documentos PDF e outros formatos
+- **Gerenciamento de Links** - Adicionar e compartilhar URLs relevantes
+
+### Arquitetura de Armazenamento
+- **Armazenamento no Sistema de Arquivos** - Os arquivos são armazenados no sistema de arquivos do servidor
+- **Geração de URLs Únicas** - Cada arquivo recebe um identificador único para acesso
+- **Metadados** - Armazenamento de informações como nome original e tipo do arquivo
+- **Otimização** - Arquivos são servidos diretamente como recursos estáticos
+
+### Segurança
+- **Validação de Tipos** - Apenas formatos permitidos podem ser enviados
+- **Limitação de Tamanho** - Arquivos são limitados a 10MB
+- **Acesso Controlado** - Apenas usuários autorizados podem visualizar arquivos privados
 
 ## 🚀 Como Executar o Projeto
 

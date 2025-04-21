@@ -15,7 +15,7 @@ public class FindFamily {
 
     public Families execute(String familyID) throws SystemContextException {
         return familiesRepository.findById(familyID).orElseThrow(
-                () -> new SystemContextException("Family not found")
+                () -> new SystemContextException("Familia não encontrada")
         );
     }
 }

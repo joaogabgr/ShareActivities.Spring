@@ -1,4 +1,4 @@
-import { View, Text, StyleSheet, TextInput, TouchableOpacity, SafeAreaView, ActivityIndicator } from "react-native";
+import { View, Text, StyleSheet, TextInput, TouchableOpacity, SafeAreaView, ActivityIndicator, Image } from "react-native";
 import { useRouter } from "expo-router";
 import React, { useContext, useState } from "react";
 import { FontAwesomeIcon } from '@fortawesome/react-native-fontawesome';
@@ -78,7 +78,6 @@ export default function Register() {
             await api.post('/auth/register', user);
             await authContext.login(email, password);
         } catch (error) {
-            ErrorAlertComponent("Erro", "Erro ao registrar. Tente novamente.");
         } finally {
             setIsLoading(false);
         }
@@ -89,11 +88,7 @@ export default function Register() {
             <KeyboardAvoidingContainer formType="auth">
                 <View style={styles.content}>
                     <View style={styles.logoContainer}>
-                        <FontAwesomeIcon 
-                            icon={faUserPlus} 
-                            size={60} 
-                            color={colors.primary} 
-                        />
+                        <Image source={require('../../../../assets/images/favicon.png')}/>
                         <Text style={styles.title}>Criar Conta</Text>
                         <Text style={styles.subtitle}>Preencha os dados para se cadastrar</Text>
                     </View>

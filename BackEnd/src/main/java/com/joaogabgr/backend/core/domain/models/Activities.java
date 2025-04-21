@@ -30,13 +30,20 @@ public class Activities {
     private Double latitude;
     private Double longitude;
 
-    @Lob
-    @Column(columnDefinition = "LONGBLOB")
-    private byte[] image;
+    @Column(length = 1000)
+    private String linkUrl;
 
-    @Lob
-    @Column(columnDefinition = "LONGBLOB")
-    private byte[] document;
+    @Column(length = 1000)
+    private String imageUrl;
+    
+    @Column(length = 1000)
+    private String documentUrl;
+    
+    @Column(length = 255)
+    private String documentName;
+    
+    @Column(length = 255)
+    private String imageName;
 
     @Enumerated(EnumType.STRING)
     private ActivitiesStatus status;

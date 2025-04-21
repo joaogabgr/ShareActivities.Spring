@@ -2,6 +2,7 @@ import axios, { AxiosError } from "axios";
 import { CreateActivities } from "../types/Activities/CreateActivities";
 import { UpdateActivities } from "../types/Activities/UpdateActivities";
 import { CreateFamilyDTO } from "../types/Family/CreateFamilyDTO";
+import { CreateFamilyRequest, InviteMemberRequest, UpdateFamilyRequest } from "../types/Family/Family";
 import { ErrorAlertComponent } from "../app/components/Alerts/AlertComponent";
 
 interface ErrorResponse {
@@ -72,6 +73,9 @@ const checkInternetConnection = async () => {
 };
 
 export const links = {
+    // Adicionar a URL base da API para uso em componentes
+    API_URL: api.defaults.baseURL,
+    
     //#region ATIVIDADES
     readActivities: async (id: string) => {
         const isConnected = await checkInternetConnection();
@@ -79,6 +83,14 @@ export const links = {
             throw new Error("Sem conexão com a internet");
         }
         return api.get("/activities/list/"+ id);
+    },
+
+    readGroupActivities: async (groupId: string) => {
+        const isConnected = await checkInternetConnection();
+        if (!isConnected) {
+            throw new Error("Sem conexão com a internet");
+        }
+        return api.get("/activities/listgroup/"+ groupId);
     },
 
     deleteActivity: async (id: string) => {
@@ -94,7 +106,27 @@ export const links = {
         if (!isConnected) {
             throw new Error("Sem conexão com a internet");
         }
-        return api.post("/activities/create", data);
+        
+        const activityData = {
+            name: data.name,
+            description: data.description,
+            status: data.status,
+            userId: data.userId,
+            type: data.type,
+            dateExpire: data.dateExpire,
+            priority: data.priority,
+            daysForRecover: data.daysForRecover,
+            familyId: data.familyId,
+            notes: data.notes,
+            location: data.location,
+            linkUrl: data.linkUrl,
+            photoUrl: data.photoUrl,
+            documentUrl: data.documentUrl,
+            photoName: data.photoName,
+            documentName: data.documentName
+        };
+        
+        return api.post("/activities/create", activityData);
     },
 
     updateActivity: async (data: UpdateActivities) => {
@@ -102,7 +134,29 @@ export const links = {
         if (!isConnected) {
             throw new Error("Sem conexão com a internet");
         }
-        return api.put("/activities/update", data);
+        
+        const activityData = {
+            id: data.id,
+            name: data.name,
+            description: data.description,
+            status: data.status,
+            userId: data.userId,
+            type: data.type,
+            dateExpire: data.dateExpire,
+            dateCreated: data.dateCreated,
+            priority: data.priority,
+            daysForRecover: data.daysForRecover,
+            familyId: data.familyId,
+            notes: data.notes,
+            location: data.location,
+            linkUrl: data.linkUrl,
+            photoUrl: data.photoUrl,
+            documentUrl: data.documentUrl,
+            photoName: data.photoName,
+            documentName: data.documentName
+        };
+        
+        return api.put("/activities/update", activityData);
     },
 
     updateActivityStatus: async (id: string, status: string) => {
@@ -129,6 +183,112 @@ export const links = {
             throw new Error("Sem conexão com a internet");
         }
         return api.post("families/create", data);
-    }
+    },
+
+    getListFamilies: async (userEmail: string) => {
+        const isConnected = await checkInternetConnection();
+        if (!isConnected) {
+            throw new Error("Sem conexão com a internet");
+        }
+        return api.get(`/families/listFamilies/${userEmail}`);
+    },
+
+    createNewFamily: async (userEmail: string, name: string) => {
+        const isConnected = await checkInternetConnection();
+        if (!isConnected) {
+            throw new Error("Sem conexão com a internet");
+        }
+        return api.post(`/families/create`, { userEmail, name });
+    },
+
+    updateFamily: async (data: UpdateFamilyRequest) => {
+        const isConnected = await checkInternetConnection();
+        if (!isConnected) {
+            throw new Error("Sem conexão com a internet");
+        }
+        return api.put(`/families/update`, data);
+    },
+
+    deleteFamily: async (familyId: string) => {
+        const isConnected = await checkInternetConnection();
+        if (!isConnected) {
+            throw new Error("Sem conexão com a internet");
+        }
+        return api.delete(`/families/delete/${familyId}`);
+    },
+
+    deleteFamilyMember: async (familyId: string, userEmail: string, userDeleted: string) => {
+        const isConnected = await checkInternetConnection();
+        if (!isConnected) {
+            throw new Error("Sem conexão com a internet");
+        }
+        return api.delete(`/families/deleteMemberOnFamily/${familyId}/${userEmail}/${userDeleted}`);
+    },
+
+    getFamilyMembers: async (familyId: string) => {
+        const isConnected = await checkInternetConnection();
+        if (!isConnected) {
+            throw new Error("Sem conexão com a internet");
+        }
+        return api.get(`/families/listMemberFamily/${familyId}`);
+    },
+
+    inviteMember: async (data: InviteMemberRequest) => {
+        const isConnected = await checkInternetConnection();
+        if (!isConnected) {
+            throw new Error("Sem conexão com a internet");
+        }
+        return api.post(`/families/invite`, data);
+    },
+
+    removeMember: async (familyId: string, memberId: string) => {
+        const isConnected = await checkInternetConnection();
+        if (!isConnected) {
+            throw new Error("Sem conexão com a internet");
+        }
+        return api.delete(`/families/removeMember/${familyId}/${memberId}`);
+    },
+
+    // Novas funções para convites
+
+    inviteNewMember: async (data: InviteMemberRequest) => {
+        const isConnected = await checkInternetConnection();
+        if (!isConnected) {
+            throw new Error("Sem conexão com a internet");
+        }
+        return api.post(`/invites/inviteMemberToFamily`, data);
+    },
+
+    getInvitationsReceived: async (userEmail: string) => {
+        const isConnected = await checkInternetConnection();
+        if (!isConnected) {
+            throw new Error("Sem conexão com a internet");
+        }
+        return api.get(`/invites/getInvites/${userEmail}`);
+    },
+
+    getFamilyInvitationsSent: async (familyId: string) => {
+        const isConnected = await checkInternetConnection();
+        if (!isConnected) {
+            throw new Error("Sem conexão com a internet");
+        }
+        return api.get(`/invites/getInvitesFamily/${familyId}`);
+    },
+
+    acceptInvitation: async (invitationId: string) => {
+        const isConnected = await checkInternetConnection();
+        if (!isConnected) {
+            throw new Error("Sem conexão com a internet");
+        }
+        return api.post(`/invites/acceptInviteMember/${invitationId}`);
+    },
+
+    deleteInvitation: async (invitationId: string) => {
+        const isConnected = await checkInternetConnection();
+        if (!isConnected) {
+            throw new Error("Sem conexão com a internet");
+        }
+        return api.delete(`/invites/deleteInvite/${invitationId}`);  
+    },
     //#endregion
 }

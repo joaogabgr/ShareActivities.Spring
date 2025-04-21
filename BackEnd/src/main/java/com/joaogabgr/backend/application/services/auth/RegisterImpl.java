@@ -24,19 +24,19 @@ public class RegisterImpl implements RegisterUseCase {
     public UserDTO register(RegisterDTO data) throws SystemContextException {
         try {
             if (data.isValid()) {
-                throw new SystemContextException("Invalid data");
+                throw new SystemContextException("Data invalida");
             }
 
             if (checkUserCredentials.findEmail(data.getEmail())) {
-                throw new SystemContextException("Email already in use");
+                throw new SystemContextException("Email já cadastrado");
             }
 
             if (checkUserCredentials.findCpf(data.getCpf())) {
-                throw new SystemContextException("CPF already in use");
+                throw new SystemContextException("CPF já cadastrado");
             }
 
             if (data.getCpf().length() != 11) {
-                throw new SystemContextException("Invalid CPF");
+                throw new SystemContextException("CPF inválido");
             }
 
             String encodedPassword = encodePassword(data.getPassword());

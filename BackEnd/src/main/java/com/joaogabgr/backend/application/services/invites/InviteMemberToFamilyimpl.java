@@ -1,8 +1,11 @@
-package com.joaogabgr.backend.application.services.families;
+package com.joaogabgr.backend.application.services.invites;
 
+import com.joaogabgr.backend.application.operations.Notifications.GetExpoToken;
+import com.joaogabgr.backend.application.operations.Notifications.PushNotificationService;
 import com.joaogabgr.backend.application.operations.families.FindFamily;
 import com.joaogabgr.backend.application.operations.user.FindUser;
 import com.joaogabgr.backend.application.services.user.CheckUserHaveFamilyImpl;
+import com.joaogabgr.backend.core.domain.models.Activities;
 import com.joaogabgr.backend.core.domain.models.Families;
 import com.joaogabgr.backend.core.domain.models.Invites;
 import com.joaogabgr.backend.core.domain.models.User;
@@ -23,6 +26,10 @@ public class InviteMemberToFamilyimpl implements InviteMemberToFamilyUseCase {
     private FindFamily findFamily;
     @Autowired
     private CheckUserHaveFamilyImpl CheckUserHaveFamilyImpl;
+    @Autowired
+    private GetExpoToken getExpoToken;
+    @Autowired
+    private PushNotificationService pushNotificationService;
 
     @Override
     public Invites execute(InviteMemberToFamilyDTO inviteMemberToFamilyDTO) throws SystemContextException {
@@ -39,10 +46,19 @@ public class InviteMemberToFamilyimpl implements InviteMemberToFamilyUseCase {
             invite.setFamily(families);
 
             inviteRepository.save(invite);
+            sendNotification(invite);
 
             return invite;
         } catch (Exception e) {
             throw new SystemContextException(e.getMessage());
         }
+    }
+
+    private void sendNotification(Invites invites) throws SystemContextException {
+        String expoToken = getExpoToken.execute(invites.getInvitedUser().getEmail());
+        String title = "Convite de grupo recebido";
+        String message = "Você foi convidado para o grupo " + invites.getFamily().getName() + " por " + invites.getUser().getName();
+
+        pushNotificationService.sendPushNotification(expoToken, title, message);
     }
 }
