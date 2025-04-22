@@ -19,7 +19,7 @@ public class ConvertActivitiesToReadDTO {
         readActivitiesDTO.setDescription(activities.getDescription());
         readActivitiesDTO.setStatus(String.valueOf(activities.getStatus()));
         readActivitiesDTO.setUserName(activities.getUser().getName());
-        readActivitiesDTO.setDate(activities.getDateCreated().toString());
+        readActivitiesDTO.setDateCreated(activities.getDateCreated().toString());
         readActivitiesDTO.setPriority(String.valueOf(activities.getPriority()));
         readActivitiesDTO.setNotes(activities.getNotes());
         readActivitiesDTO.setLinkUrl(activities.getLinkUrl());

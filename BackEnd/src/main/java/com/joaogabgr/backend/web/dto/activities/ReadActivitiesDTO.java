@@ -11,10 +11,10 @@ public class ReadActivitiesDTO {
     private String description;
     private String status;
     private String userName;
-    private String date;
     private String priority;
     private String familyName;
     private String type;
+    private String dateCreated;
     private String dateExpire;
     private String dayForRecover;
     private String notes;

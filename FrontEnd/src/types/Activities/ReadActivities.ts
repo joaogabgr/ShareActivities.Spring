@@ -6,7 +6,7 @@ export type ReadActivities = {
     description: string;
     status: string;
     userName: string;
-    date: string;
+    dateCreated: string;
     priority: string;
     type: string;
     dateExpire: string;

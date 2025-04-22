@@ -1,0 +1,4 @@
+Requisitos: 
+13. O aplicativo deve permitir a criação de alertas de lembretes para as tarefas. 
+14. O aplicativo deve permitir que os membros do grupo validem a conclusão de uma tarefa. 
+20. O usuário poderá utilizar comandos de voz para criar ou editar tarefas.

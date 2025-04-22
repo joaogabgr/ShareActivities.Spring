@@ -9,6 +9,7 @@ import {
   Modal,
   ScrollView,
   Pressable,
+  Platform,
 } from "react-native";
 import { colors, fonts, shadows, spacing } from "@/src/globalCSS";
 import { ReadActivities } from "@/src/types/Activities/ReadActivities";
@@ -35,15 +36,18 @@ import {
   faTimes,
   faExternalLinkAlt,
   faDownload,
+  faCalendarPlus,
 } from "@fortawesome/free-solid-svg-icons";
 import React, { useEffect, useState } from "react";
 import { useLocation } from "@/src/contexts/LocationContext";
 import { calcularDistancia, extrairCoordenadas, formatarDistancia } from "@/src/utils/distanceUtils";
+import * as Calendar from 'expo-calendar';
 
 interface ToDoComponentProps extends ReadActivities {
   onDelete: (id: string) => void;
   onEdit: (id: string) => void;
   onStatusChange: () => void;
+  familyName?: string;
 }
 
 export default function ToDoComponent(props: ToDoComponentProps) {
@@ -51,6 +55,7 @@ export default function ToDoComponent(props: ToDoComponentProps) {
   const [distancia, setDistancia] = useState<number | null>(null);
   const [proximidade, setProximidade] = useState(false);
   const [modalVisible, setModalVisible] = useState(false);
+  const [calendarPermission, setCalendarPermission] = useState<boolean>(false);
 
   // Calcula a distância quando a localização do usuário muda ou quando o componente é montado
   useEffect(() => {
@@ -67,6 +72,112 @@ export default function ToDoComponent(props: ToDoComponentProps) {
       );
     }
   }, [proximidade, props.name]);
+
+  useEffect(() => {
+    checkCalendarPermission();
+  }, []);
+
+  const checkCalendarPermission = async () => {
+    const { status } = await Calendar.requestCalendarPermissionsAsync();
+    setCalendarPermission(status === 'granted');
+  };
+
+  const vincularAoCalendario = async () => {
+    try {
+      if (!calendarPermission) {
+        const { status } = await Calendar.requestCalendarPermissionsAsync();
+        if (status !== 'granted') {
+          Alert.alert('Permissão necessária', 'Por favor, permita o acesso ao calendário para vincular a atividade.');
+          return;
+        }
+        setCalendarPermission(true);
+      }
+
+      const defaultCalendar = await Calendar.getDefaultCalendarAsync();
+      
+      const detalhesEvento = [
+        // Informações básicas
+        '📋 Informações da Atividade:',
+        `• Nome: ${props.name}`,
+        `• Tipo: ${props.type}`,
+        `• Status: ${getStatus(props.status)}`,
+        `• Prioridade: ${getPriority(props.priority)}`,
+        props.familyName ? `• Grupo: ${props.familyName}` : '',
+        
+        // Descrição
+        '\n📝 Descrição:',
+        props.description || 'Sem descrição',
+        
+        // Localização
+        props.location ? '\n📍 Localização:' : '',
+        props.location ? `• ${props.location}` : '',
+        
+        // Notas
+        props.notes ? '\n📌 Notas:' : '',
+        props.notes ? `• ${props.notes}` : '',
+        
+        // Anexos
+        '\n📎 Anexos:',
+        props.photoUrl ? `• Foto: ${props.photoUrl}` : '',
+        props.documentUrl ? `• Documento: ${props.documentName || 'Documento'} - ${props.documentUrl}` : '',
+        props.linkUrl ? `• Link: ${props.linkUrl}` : '',
+        (!props.photoUrl && !props.documentUrl && !props.linkUrl) ? '• Nenhum anexo' : '',
+      ].filter(Boolean).join('\n');
+
+      // Usar a data de expiração como data de início se existir
+      const startDate = props.dateExpire ? new Date(props.dateExpire) : new Date(props.dateCreated);
+      if (isNaN(startDate.getTime())) {
+        throw new Error('Data de início inválida');
+      }
+
+      // Calcular a data de término (1 hora depois da data de início)
+      const endDate = new Date(startDate.getTime() + 3600000);
+
+      // Configurar a repetição se houver data de recuperação
+      let recurrenceRule;
+      if (props.dayForRecover) {
+        const recoverDate = new Date(props.dayForRecover);
+        if (!isNaN(recoverDate.getTime())) {
+          // Calcular o número de dias entre a data de início e a data de recuperação
+          const diffTime = recoverDate.getTime() - startDate.getTime();
+          const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+          
+          if (diffDays > 0) {
+            recurrenceRule = {
+              frequency: Calendar.Frequency.DAILY,
+              interval: diffDays,
+              endDate: recoverDate,
+            };
+          }
+        }
+      }
+
+      const evento = {
+        title: props.name,
+        startDate: startDate,
+        endDate: endDate,
+        notes: detalhesEvento,
+        location: props.location,
+        alarms: [{ relativeOffset: -60 }], // Alarme 1 hora antes
+        recurrenceRule: recurrenceRule,
+      };
+
+      const eventoId = await Calendar.createEventAsync(defaultCalendar.id, evento);
+      
+      Alert.alert(
+        'Sucesso',
+        'Atividade vinculada ao calendário com sucesso!' + (recurrenceRule ? '' : ''),
+        [{ text: 'OK' }]
+      );
+    } catch (error) {
+      console.error('Erro ao vincular ao calendário:', error);
+      Alert.alert(
+        'Erro',
+        'Não foi possível vincular a atividade ao calendário. Por favor, verifique se as datas estão corretas e tente novamente.',
+        [{ text: 'OK' }]
+      );
+    }
+  };
 
   const calcularDistanciaAtividade = () => {
     if (!localizacaoUsuario || !props.latLog) {
@@ -326,7 +437,7 @@ export default function ToDoComponent(props: ToDoComponentProps) {
             
             <View style={styles.footerItem}>
               <FontAwesomeIcon icon={faCalendarAlt} size={12} color={colors.textSecondary} />
-              <Text style={styles.footerText}>{formatDayAndHour(props.date)}</Text>
+              <Text style={styles.footerText}>{formatDayAndHour(props.dateCreated)}</Text>
             </View>
             
             {props.dateExpire && props.status !== "DONE" && (
@@ -393,6 +504,15 @@ export default function ToDoComponent(props: ToDoComponentProps) {
               <FontAwesomeIcon icon={faInfoCircle} size={12} color={colors.textSecondary} />
               <Text style={styles.footerText}>{props.type}</Text>
             </View>
+
+            {/* Botão para vincular ao calendário */}
+            <TouchableOpacity 
+              style={styles.calendarButton}
+              onPress={vincularAoCalendario}
+            >
+              <FontAwesomeIcon icon={faCalendarPlus} size={14} color={colors.primary} />
+              <Text style={styles.calendarButtonText}>Vincular ao Calendário</Text>
+            </TouchableOpacity>
 
             {/* Botão para abrir modal se houver anexos */}
             {hasAttachments && (
@@ -791,5 +911,21 @@ const styles = StyleSheet.create({
     color: colors.textSecondary,
     textAlign: 'center',
     padding: spacing.large,
+  },
+  calendarButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginTop: spacing.small,
+    padding: spacing.small,
+    backgroundColor: colors.surface,
+    borderRadius: 8,
+    alignSelf: 'flex-start',
+    ...shadows.small,
+  },
+  calendarButtonText: {
+    fontSize: fonts.size.small,
+    color: colors.primary,
+    fontWeight: fonts.weight.medium as any,
+    marginLeft: spacing.xs,
   },
 });

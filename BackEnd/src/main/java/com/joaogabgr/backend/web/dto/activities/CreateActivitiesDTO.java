@@ -19,6 +19,7 @@ public class CreateActivitiesDTO implements DTO {
     private String userId;
     private String familyId;
     private String type;
+    private LocalDateTime dateCreated;
     private LocalDateTime dateExpire;
     private Integer daysForRecover;
     private String notes;
@@ -35,7 +36,7 @@ public class CreateActivitiesDTO implements DTO {
         activities.setName(name);
         activities.setDescription(description);
         activities.setStatus(ActivitiesStatus.valueOf(status));
-        activities.setDateCreated(LocalDateTime.now());
+        activities.setDateCreated(dateCreated);
         activities.setDateExpire(dateExpire);
         activities.setType(type);
         activities.setPriority(PriorityActivities.valueOf(priority));

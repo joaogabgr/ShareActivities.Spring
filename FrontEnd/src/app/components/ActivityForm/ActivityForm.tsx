@@ -28,6 +28,7 @@ import {
   faLink,
   faXmark,
   faUpload,
+  faTimes,
 } from "@fortawesome/free-solid-svg-icons";
 import { CreateActivities } from "@/src/types/Activities/CreateActivities";
 import { UpdateActivities } from "@/src/types/Activities/UpdateActivities";
@@ -57,7 +58,7 @@ export default function ActivityForm({ mode, activityData, onSuccess, familyId, 
   const [location, setLocation] = useState("");
   const [type, setType] = useState("");
   const [expirationDate, setExpirationDate] = useState<Date | null>(null);
-  const [dateCreate, setDateCreate] = useState<Date | undefined>(undefined);
+  const [dateCreate, setDateCreate] = useState<Date | null>(new Date());
   const [priority, setPriority] = useState<string>("MEDIUM");
   const [daysForRecover, setDaysForRecover] = useState(0);
   
@@ -79,7 +80,7 @@ export default function ActivityForm({ mode, activityData, onSuccess, familyId, 
         setTitle(activityData.name || "");
         setDescription(activityData.description || "");
         setStatus(activityData.status || "PENDING");
-        setDateCreate(activityData.date ? new Date(activityData.date) : undefined);
+        setDateCreate(activityData.dateCreated ? new Date(activityData.dateCreated) : new Date());
         setNotes(activityData.notes || "");
         setLocation(activityData.location || "");
         
@@ -114,7 +115,7 @@ export default function ActivityForm({ mode, activityData, onSuccess, familyId, 
         // Configurar dias para recuperar se existir
         if (activityData.dayForRecover) {
           const dayForRecoverDate = new Date(activityData.dayForRecover).getTime();
-          const activityDate = new Date(activityData.date).getTime();
+          const activityDate = new Date(activityData.dateCreated).getTime();
           setDaysForRecover(Math.ceil((dayForRecoverDate - activityDate) / (1000 * 60 * 60 * 24)));
         }
         
@@ -128,6 +129,8 @@ export default function ActivityForm({ mode, activityData, onSuccess, familyId, 
         setIsLoading(false);
       }
     } else {
+      // Se for criação, define a data de criação como hoje
+      setDateCreate(new Date());
       setIsLoading(false);
     }
   }, [mode, activityData, familyId]);
@@ -383,6 +386,7 @@ export default function ActivityForm({ mode, activityData, onSuccess, familyId, 
           userId: authContext.user?.name || "",
           type: type,
           dateExpire: formattedDate ? formattedDate.toISOString() : null,
+          dateCreated: dateCreate ? dateCreate.toISOString() : new Date().toISOString(),
           priority: priority,
           daysForRecover: daysForRecover,
           familyId: familyId || "",
@@ -408,7 +412,7 @@ export default function ActivityForm({ mode, activityData, onSuccess, familyId, 
           userId: authContext.user?.name || "",
           type: type,
           dateExpire: formattedDate ? formattedDate.toISOString() : "",
-          dateCreated: formatedDateCreated ? formatedDateCreated.toISOString() : "",
+          dateCreated: formatedDateCreated ? formatedDateCreated.toISOString() : new Date().toISOString(),
           priority: priority,
           daysForRecover: daysForRecover,
           familyId: activityFamilyId,
@@ -548,12 +552,82 @@ export default function ActivityForm({ mode, activityData, onSuccess, familyId, 
                 onPriorityChange={setPriority}
               />
 
+              {/* Data de criação */}
+              <View style={styles.datePickerContainer}>
+                <View style={styles.datePickerWrapper}>
+                  <DatePicker
+                    date={dateCreate}
+                    onDateChange={(newDate) => {
+                      // Verifica se a nova data é no futuro
+                      const today = new Date();
+                      today.setHours(0, 0, 0, 0);
+                      const selectedDate = new Date(newDate);
+                      selectedDate.setHours(0, 0, 0, 0);
+                      
+                      if (selectedDate >= today) {
+                        setDateCreate(newDate);
+                      } else {
+                        ErrorAlertComponent(
+                          "Data inválida",
+                          "A data de criação não pode ser no passado."
+                        );
+                      }
+                    }}
+                    label="Data de criação"
+                  />
+                </View>
+                <TouchableOpacity
+                  style={styles.clearButton}
+                  onPress={() => {
+                    setDateCreate(null);
+                  }}
+                >
+                  <FontAwesomeIcon icon={faTimes} size={14} color={colors.error} />
+                </TouchableOpacity>
+              </View>
+
               {/* Data de expiração */}
-              <DatePicker
-                date={expirationDate}
-                onDateChange={setExpirationDate}
-                label="Data de expiração"
-              />
+              <View style={styles.datePickerContainer}>
+                <View style={styles.datePickerWrapper}>
+                  <DatePicker
+                    date={expirationDate}
+                    onDateChange={(newDate) => {
+                      if (!dateCreate) {
+                        ErrorAlertComponent(
+                          "Data inválida",
+                          "Por favor, selecione primeiro a data de criação."
+                        );
+                        return;
+                      }
+
+                      const selectedDate = new Date(newDate);
+                      const creationDate = new Date(dateCreate);
+                      
+                      // Ajusta as horas para comparar apenas as datas
+                      selectedDate.setHours(0, 0, 0, 0);
+                      creationDate.setHours(0, 0, 0, 0);
+                      
+                      if (selectedDate > creationDate) {
+                        setExpirationDate(newDate);
+                      } else {
+                        ErrorAlertComponent(
+                          "Data inválida",
+                          "A data de expiração deve ser posterior à data de criação."
+                        );
+                      }
+                    }}
+                    label="Data de expiração"
+                  />
+                </View>
+                <TouchableOpacity
+                  style={styles.clearButton}
+                  onPress={() => {
+                    setExpirationDate(null);
+                  }}
+                >
+                  <FontAwesomeIcon icon={faTimes} size={14} color={colors.error} />
+                </TouchableOpacity>
+              </View>
 
               {/* Seção de Anexos */}
               <View style={styles.attachmentsSection}>
@@ -904,5 +978,24 @@ const styles = StyleSheet.create({
     fontStyle: 'italic',
     textAlign: 'center',
     padding: spacing.small,
+  },
+  datePickerContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: spacing.medium,
+  },
+  datePickerWrapper: {
+    flex: 1,
+  },
+  clearButton: {
+    width: 40,
+    height: 40,
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: colors.surface,
+    borderRadius: 4,
+    borderWidth: 1,
+    borderColor: colors.error,
+    marginLeft: spacing.small,
   },
 });

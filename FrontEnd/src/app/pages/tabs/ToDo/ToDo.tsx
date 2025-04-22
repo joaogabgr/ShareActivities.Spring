@@ -12,6 +12,7 @@ import { useRouter, useLocalSearchParams } from "expo-router";
 import AddActivitiesButton from "@/src/app/components/AddActivitiesButton/AddActivitiesButton";
 import { ReadActivities } from "@/src/types/Activities/ReadActivities";
 import React from "react";
+import ToDoGraphs from '@/src/app/components/ToDoGraphs/ToDoGraphs';
 
 type SectionStatus = "PENDING" | "IN_PROGRESS" | "DONE";
 
@@ -202,6 +203,15 @@ export default function ToDo() {
         );
     };
 
+    const handleViewMore = () => {
+        router.push({
+            pathname: "/pages/Activities/ToDoDetails/ToDoDetails",
+            params: {
+                activities: JSON.stringify(activities)
+            }
+        });
+    };
+
     useEffect(() => {
         if (authContext.isAuthenticated) {
             fetchActivities();
@@ -230,6 +240,7 @@ export default function ToDo() {
                     </View>
                 ) : (
                     <ScrollView style={styles.scrollView} contentContainerStyle={styles.scrollContent}>
+                        <ToDoGraphs activities={activities} onViewMore={handleViewMore} />
                         {renderStatusSection("PENDING", "Pendentes")}
                         {renderStatusSection("IN_PROGRESS", "Em Progresso")}
                         {renderStatusSection("DONE", "Concluídas")}

@@ -66,14 +66,16 @@ ShareActivities é uma aplicação moderna para gerenciamento de tarefas familia
     - Sistema para compartilhamento de documentos e links relevantes às tarefas
   - Integração com GPS para notificações baseadas em localização:
     - Alertas inteligentes quando próximo a locais relacionados às tarefas pendentes
+  - Recurso de automação:
+    - Integração com aplicativo de produtividade
+  - Analise de dados:
+      - Relatórios completos de produtividade individual e coletiva
 
 ### Sprint 3 - Recursos Avançados (26/05/2025)
 - **Produtividade**
-  - Recursos de automação e produtividade:
-    - Integração com aplicativo de produtividade
+  - Recursos de produtividade:
     - Sistema de comandos de voz para criação de tarefas
   - Análise avançada de dados:
-    - Relatórios completos de produtividade individual e coletiva
     - Métricas detalhadas de tempo, conclusão e atrasos
     - Visualizações gráficas personalizáveis de desempenho
 
