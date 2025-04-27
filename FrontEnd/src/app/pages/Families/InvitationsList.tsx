@@ -14,7 +14,6 @@ import { links } from '@/src/api/api';
 import { FontAwesomeIcon } from '@fortawesome/react-native-fontawesome';
 import { faArrowLeft, faCheck, faXmark, faEnvelope } from '@fortawesome/free-solid-svg-icons';
 import { ErrorAlertComponent, SuccessAlertComponent } from '@/src/app/components/Alerts/AlertComponent';
-import { SafeAreaView } from 'react-native-safe-area-context';
 import { AuthContext } from '@/src/contexts/AuthContext';
 import { InvitationResponse, InvitationsResponseData } from '@/src/types/Family/Family';
 import Header from "@/src/app/components/header/Header";
@@ -116,7 +115,7 @@ export default function InvitationsList() {
 
   if (loading) {
     return (
-      <SafeAreaView style={styles.container}>
+      <View style={styles.container}>
         <Header />
         <View style={styles.contentContainer}>
           <Text style={styles.pageTitle}>Convites Recebidos</Text>
@@ -125,12 +124,12 @@ export default function InvitationsList() {
             <Text style={styles.loadingText}>Carregando convites...</Text>
           </View>
         </View>
-      </SafeAreaView>
+      </View>
     );
   }
 
   return (
-    <SafeAreaView style={styles.container}>
+    <View style={styles.container}>
       <Header />
       <View style={styles.contentContainer}>
         <Text style={styles.pageTitle}>Convites Recebidos</Text>
@@ -197,7 +196,7 @@ export default function InvitationsList() {
           />
         )}
       </View>
-    </SafeAreaView>
+    </View>
   );
 }
 

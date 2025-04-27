@@ -125,6 +125,9 @@ export default function FamilyCard(props: FamilyCardProps) {
         <View style={styles.header}>
           <View style={styles.titleContainer}>
             <Text style={styles.title}>{props.name}</Text>
+            {props.description && (
+              <Text style={styles.description}>{props.description}</Text>
+            )}
           </View>
         </View>
 

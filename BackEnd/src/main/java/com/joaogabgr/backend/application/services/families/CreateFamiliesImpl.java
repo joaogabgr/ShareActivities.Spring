@@ -26,6 +26,7 @@ public class CreateFamiliesImpl implements CreateFamilieUseCase {
 
             Families families = new Families();
             families.setName(createFamiliesDTO.getName());
+            families.setDescription(createFamiliesDTO.getDescription());
 
             familiesRepository.save(families);
             addMemberOnFamily(families.getId(), createFamiliesDTO.getUserEmail());

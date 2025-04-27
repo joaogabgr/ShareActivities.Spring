@@ -56,6 +56,7 @@ public class ChatSendMessageImpl {
     private void sendNotificationForFamily(Chat chat) throws SystemContextException {
         List<FamilyUserDTO> familyUsers = listMemberToFamily.execute(chat.getRoomId().getId());
         for (FamilyUserDTO familyUser : familyUsers) {
+            if (chat.getSender().getEmail().equals(familyUser.getUserEmail())) continue;
             String expoToken = getExpoToken.execute(familyUser.getUserEmail());
             String title = "Mensagem de " + chat.getSender().getName() + " na sala " + chat.getRoomId().getName();
             String message = "Nova mensagem: " + chat.getContent();

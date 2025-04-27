@@ -1,4 +1,4 @@
-import { View, Text, StyleSheet, TextInput, TouchableOpacity, SafeAreaView, ActivityIndicator, Image } from "react-native";
+import { Text, StyleSheet, TextInput, TouchableOpacity, ActivityIndicator, Image, View } from "react-native";
 import { useRouter } from "expo-router";
 import React, { useContext, useState } from "react";
 import { FontAwesomeIcon } from '@fortawesome/react-native-fontawesome';
@@ -84,7 +84,7 @@ export default function Register() {
     };
 
     return (
-        <SafeAreaView style={styles.container}>
+        <View style={styles.container}>
             <KeyboardAvoidingContainer formType="auth">
                 <View style={styles.content}>
                     <View style={styles.logoContainer}>
@@ -210,7 +210,7 @@ export default function Register() {
                     </View>
                 </View>
             </KeyboardAvoidingContainer>
-        </SafeAreaView>
+        </View>
     );
 }
 

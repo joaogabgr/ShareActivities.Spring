@@ -4,7 +4,6 @@ import {
   Text,
   TouchableOpacity,
   StyleSheet,
-  SafeAreaView,
   ScrollView,
   ActivityIndicator,
   Image,
@@ -129,7 +128,7 @@ export default function ActivityForm({ mode, activityData, onSuccess, familyId, 
         setIsLoading(false);
       }
     } else {
-      // Se for criação, define a data de criação como hoje
+      // Se for criação, define a data como hoje
       setDateCreate(new Date());
       setIsLoading(false);
     }
@@ -456,18 +455,18 @@ export default function ActivityForm({ mode, activityData, onSuccess, familyId, 
 
   if (isLoading) {
     return (
-      <SafeAreaView style={styles.container}>
+      <View style={styles.container}>
         <Header />
         <View style={styles.loadingContainer}>
           <ActivityIndicator size="large" color={colors.primary} />
           <Text style={styles.loadingText}>Carregando atividade...</Text>
         </View>
-      </SafeAreaView>
+      </View>
     );
   }
 
   return (
-    <SafeAreaView style={styles.container}>
+    <View style={styles.container}>
       <Header />
       <KeyboardAvoidingContainer>
         <ScrollView
@@ -552,7 +551,7 @@ export default function ActivityForm({ mode, activityData, onSuccess, familyId, 
                 onPriorityChange={setPriority}
               />
 
-              {/* Data de criação */}
+              {/* Data */}
               <View style={styles.datePickerContainer}>
                 <View style={styles.datePickerWrapper}>
                   <DatePicker
@@ -569,11 +568,11 @@ export default function ActivityForm({ mode, activityData, onSuccess, familyId, 
                       } else {
                         ErrorAlertComponent(
                           "Data inválida",
-                          "A data de criação não pode ser no passado."
+                          "A data não pode ser no passado."
                         );
                       }
                     }}
-                    label="Data de criação"
+                    label="Data"
                   />
                 </View>
                 <TouchableOpacity
@@ -595,7 +594,7 @@ export default function ActivityForm({ mode, activityData, onSuccess, familyId, 
                       if (!dateCreate) {
                         ErrorAlertComponent(
                           "Data inválida",
-                          "Por favor, selecione primeiro a data de criação."
+                          "Por favor, selecione primeiro a data."
                         );
                         return;
                       }
@@ -612,7 +611,7 @@ export default function ActivityForm({ mode, activityData, onSuccess, familyId, 
                       } else {
                         ErrorAlertComponent(
                           "Data inválida",
-                          "A data de expiração deve ser posterior à data de criação."
+                          "A data de expiração deve ser posterior à data."
                         );
                       }
                     }}
@@ -792,7 +791,7 @@ export default function ActivityForm({ mode, activityData, onSuccess, familyId, 
           </View>
         </ScrollView>
       </KeyboardAvoidingContainer>
-    </SafeAreaView>
+    </View>
   );
 }
 

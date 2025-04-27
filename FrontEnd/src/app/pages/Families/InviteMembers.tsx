@@ -15,7 +15,6 @@ import { links } from '@/src/api/api';
 import { FontAwesomeIcon } from '@fortawesome/react-native-fontawesome';
 import { faArrowLeft, faEnvelope, faUserPlus, faXmark } from '@fortawesome/free-solid-svg-icons';
 import { ErrorAlertComponent, SuccessAlertComponent } from '@/src/app/components/Alerts/AlertComponent';
-import { SafeAreaView } from 'react-native-safe-area-context';
 import { AuthContext } from '@/src/contexts/AuthContext';
 import { InvitationResponse, InvitationsResponseData } from '@/src/types/Family/Family';
 
@@ -123,7 +122,7 @@ export default function InviteMembers() {
 
   if (loading) {
     return (
-      <SafeAreaView style={styles.container}>
+      <View style={styles.container}>
         <View style={styles.header}>
           <TouchableOpacity style={styles.backButton} onPress={handleBack}>
             <FontAwesomeIcon icon={faArrowLeft} size={18} color={colors.textSecondary} />
@@ -136,12 +135,12 @@ export default function InviteMembers() {
           <ActivityIndicator size="large" color={colors.primary} />
           <Text style={styles.loadingText}>Carregando...</Text>
         </View>
-      </SafeAreaView>
+      </View>
     );
   }
 
   return (
-    <SafeAreaView style={styles.container}>
+    <View style={styles.container}>
       <View style={styles.header}>
         <TouchableOpacity style={styles.backButton} onPress={handleBack}>
           <FontAwesomeIcon icon={faArrowLeft} size={18} color={colors.textSecondary} />
@@ -211,7 +210,7 @@ export default function InviteMembers() {
           )}
         </View>
       </View>
-    </SafeAreaView>
+    </View>
   );
 }
 

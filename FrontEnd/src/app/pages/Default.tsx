@@ -1,4 +1,4 @@
-import { SafeAreaView, StyleSheet, Text, View, Image, ScrollView } from "react-native";
+import { StyleSheet, Text, View, Image, ScrollView } from "react-native";
 import { colors, fonts, shadows, spacing } from "@/src/globalCSS";
 import { faList, faPeopleGroup, faTasks, faCalendarCheck } from "@fortawesome/free-solid-svg-icons";
 import Header from "../components/header/Header";
@@ -7,7 +7,7 @@ import React from "react";
 
 export default function Default() {    
   return (
-    <SafeAreaView style={styles.container}>
+    <View style={styles.container}>
       <Header />
       <ScrollView contentContainerStyle={styles.scrollContent}>
         <View style={styles.welcomeSection}>
@@ -34,7 +34,7 @@ export default function Default() {
 
         </View>
       </ScrollView>
-    </SafeAreaView>
+    </View>
   );
 }
 

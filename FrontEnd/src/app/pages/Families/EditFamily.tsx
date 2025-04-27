@@ -43,26 +43,51 @@ export default function EditFamily() {
     try {
       setLoading(true);
       const userEmail = authContext.user?.name;
-      const response = await links.getFamilyMembers(userEmail || "");
-      const families = response.data.model;
+      if (!userEmail) {
+        ErrorAlertComponent("Erro", "Usuário não autenticado");
+        router.dismissAll();
+        router.replace({
+          pathname: "/pages/tabs/MyFamily/MyFamily"
+        });
+        return;
+      }
+
+      // Buscar lista de famílias
+      const familiesResponse = await links.getListFamilies(userEmail);
+      const families = familiesResponse.data.model;
       
-      const foundFamily = families.find((f: Family) => f.id === id);
+      const foundFamily = families.find((f: any) => f.family.id === id);
       if (!foundFamily) {
         throw new Error("Grupo não encontrado");
       }
       
-      if (!foundFamily.isOwner) {
+      if (!foundFamily.isAdmin) {
         ErrorAlertComponent("Acesso negado", "Você não tem permissão para editar este grupo");
-        router.back();
+        router.dismissAll();
+        router.replace({
+          pathname: "/pages/tabs/MyFamily/MyFamily"
+        });
         return;
       }
 
-      setFamily(foundFamily);
-      setName(foundFamily.name);
-      setDescription(foundFamily.description || "");
-    } catch (error) {
+      // Criar objeto Family no formato que o componente espera
+      const familyObj: Family = {
+        id: foundFamily.family.id,
+        name: foundFamily.family.name,
+        description: foundFamily.family.description || "",
+        isOwner: foundFamily.isAdmin
+      };
 
-      router.back();
+      setFamily(familyObj);
+      setName(familyObj.name);
+      setDescription(familyObj.description || "");
+    } catch (error) {
+      console.error("Erro ao buscar detalhes do grupo:", error);
+      ErrorAlertComponent("Erro", "Não foi possível carregar os detalhes do grupo");
+      router.dismissAll();
+      router.replace({
+        pathname: "/pages/tabs/MyFamily/MyFamily"
+      });
     } finally {
       setLoading(false);
     }
@@ -91,9 +116,20 @@ export default function EditFamily() {
         "As alterações foram salvas com sucesso!"
       );
 
-      router.back();
+      // Usar replace para garantir que o parâmetro chegue corretamente
+      router.dismissAll();
+      router.replace({
+        pathname: "/pages/tabs/MyFamily/MyFamily",
+        params: { updated: "true" }
+      });
+      
+      // Depois de 1 segundo, redefinir o parâmetro para false
+      setTimeout(() => {
+        router.setParams({ updated: "false" });
+      }, 1000);
     } catch (error) {
-
+      console.error("Erro ao atualizar grupo:", error);
+      ErrorAlertComponent("Erro", "Não foi possível atualizar o grupo. Tente novamente.");
     } finally {
       setSaving(false);
     }
@@ -124,7 +160,17 @@ export default function EditFamily() {
         "O grupo foi excluído com sucesso!"
       );
       
-      router.replace("/pages/tabs/MyFamily/MyFamily");
+      // Usar replace para garantir que o parâmetro chegue corretamente
+      router.dismissAll();
+      router.replace({
+        pathname: "/pages/tabs/MyFamily/MyFamily",
+        params: { updated: "true" }
+      });
+      
+      // Depois de 1 segundo, redefinir o parâmetro para false
+      setTimeout(() => {
+        router.setParams({ updated: "false" });
+      }, 1000);
     } catch (error) {
       setSaving(false);
     }
@@ -133,7 +179,7 @@ export default function EditFamily() {
   const navigateToMembers = () => {
     router.push({
       pathname: "/pages/Families/Members",
-      params: { id }
+      params: { id, refresh: "false" }
     });
   };
 
@@ -192,14 +238,6 @@ export default function EditFamily() {
               {description.length}/200
             </Text>
           </View>
-
-          <TouchableOpacity
-            style={styles.actionButton}
-            onPress={navigateToMembers}
-          >
-            <FontAwesomeIcon icon={faUserGroup} size={18} color={colors.textLight} />
-            <Text style={styles.actionButtonText}>Gerenciar Membros</Text>
-          </TouchableOpacity>
 
           <View style={styles.buttonContainer}>
             <TouchableOpacity

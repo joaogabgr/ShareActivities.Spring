@@ -9,7 +9,6 @@ import {
   KeyboardAvoidingView,
   Platform,
   ScrollView,
-  SafeAreaView,
 } from "react-native";
 import { colors, fonts, shadows, spacing } from "@/src/globalCSS";
 import { links } from "@/src/api/api";
@@ -22,7 +21,7 @@ import { AuthContext } from "@/src/contexts/AuthContext";
 
 export default function CreateFamily() {
   const [loading, setLoading] = useState(false);
-  const [name, setName] = useState("");
+  const [name, setName] = useState(""); 
   const [description, setDescription] = useState("");
   const router = useRouter();
   const authContext = useContext(AuthContext);
@@ -43,27 +42,41 @@ export default function CreateFamily() {
       
       if (!userEmail) {
         ErrorAlertComponent("Erro", "Usuário não autenticado. Faça login novamente.");
+        router.dismissAll();
         router.replace("/pages/auth/Login");
         return;
       }
 
-      await links.createNewFamily(userEmail, name.trim());
+      await links.createFamily({
+        userEmail,
+        name: name.trim(),
+        description: description.trim() || undefined
+      });
 
       SuccessAlertComponent(
         "Grupo criado",
         "Seu grupo foi criado com sucesso!"
       );
 
-      router.back();
+      router.dismissAll();
+      router.replace({
+        pathname: "/pages/tabs/MyFamily/MyFamily",
+        params: { updated: "true" }
+      });
+      
+      setTimeout(() => {
+        router.setParams({ updated: "false" });
+      }, 1000);
     } catch (error) {
-
+      console.error("Erro ao criar grupo:", error);
+      ErrorAlertComponent("Erro", "Não foi possível criar o grupo. Tente novamente.");
     } finally {
       setLoading(false);
     }
   };
 
   return (
-    <SafeAreaView style={styles.container}>
+    <View style={styles.container}>
       <KeyboardAvoidingView
         style={styles.container}
         behavior={Platform.OS === "ios" ? "padding" : undefined}
@@ -93,6 +106,23 @@ export default function CreateFamily() {
             />
           </View>
 
+          <View style={styles.inputContainer}>
+            <Text style={styles.label}>Descrição (opcional)</Text>
+            <TextInput
+              style={[styles.input, styles.textArea]}
+              placeholder="Digite uma descrição para o grupo"
+              value={description}
+              onChangeText={setDescription}
+              multiline
+              maxLength={200}
+              numberOfLines={4}
+              textAlignVertical="top"
+            />
+            <Text style={styles.characterCount}>
+              {description.length}/200
+            </Text>
+          </View>
+
           <TouchableOpacity
             style={[styles.button, !name.trim() && styles.buttonDisabled]}
             onPress={handleCreate}
@@ -107,7 +137,7 @@ export default function CreateFamily() {
         </View>
         </ScrollView>
       </KeyboardAvoidingView>
-    </SafeAreaView>
+    </View>
   );
 }
 

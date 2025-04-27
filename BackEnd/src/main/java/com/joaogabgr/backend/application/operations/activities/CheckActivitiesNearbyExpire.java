@@ -36,7 +36,7 @@ public class CheckActivitiesNearbyExpire {
 
     private static final DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy 'às' HH:mm");
 
-    @Scheduled(cron = "0 0 0 * * *", zone = "America/Sao_Paulo")
+    @Scheduled(cron = "0 27 19 * * *", zone = "America/Sao_Paulo")
     public void execute() {
         System.out.println("Iniciando verificação de atividades...");
 
@@ -44,6 +44,8 @@ public class CheckActivitiesNearbyExpire {
         LocalDateTime twoDaysAhead = now.plusDays(2);
 
         activitiesRepository.findAll().forEach(activity -> {
+            System.out.println(activity.getDateExpire());
+            if (activity.getDateExpire() == null) return;
             LocalDateTime expireDateTime = activity.getDateExpire();
 
             try {

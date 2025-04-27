@@ -18,6 +18,8 @@ public class Families {
     private String id;
 
     private String name;
+    
+    private String description;
 
     @JsonIgnore
     @OneToMany(mappedBy = "roomId", cascade = CascadeType.ALL, orphanRemoval = true)

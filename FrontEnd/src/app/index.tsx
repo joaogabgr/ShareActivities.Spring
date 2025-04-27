@@ -1,7 +1,8 @@
-import { View, ActivityIndicator } from "react-native";
+import { View, ActivityIndicator, SafeAreaView } from "react-native";
 import { useEffect, useContext, useState } from "react";
 import { useRouter } from "expo-router";
 import { AuthProvider, AuthContext } from "../contexts/AuthContext";
+import React from "react";
 
 export default function Index() {
   return (
@@ -32,9 +33,9 @@ function Main() {
 
   if (loading) {
     return (
-      <View style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
+      <SafeAreaView style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
         <ActivityIndicator size="large" color="#0000ff" />
-      </View>
+      </SafeAreaView>
     );
   }
 

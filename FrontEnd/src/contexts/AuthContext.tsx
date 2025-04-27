@@ -8,6 +8,7 @@ import * as SecureStore from 'expo-secure-store';
 import { ErrorAlertComponent } from "../app/components/Alerts/AlertComponent";
 import * as Notifications from 'expo-notifications';
 import * as Device from 'expo-device';
+import { Platform } from 'react-native';
 
 export const AuthContext = createContext<AuthContextType>({
   isAuthenticated: false,
@@ -25,48 +26,74 @@ Notifications.setNotificationHandler({
   }),
 });
 
+function decodificador(token: string) {
+  return jwtDecode(token);
+};
+
+// Função para obter o token do dispositivo para notificações
+async function registerForPushNotificationsAsync() {
+  let token;
+  
+  if (Platform.OS === 'android') {
+    await Notifications.setNotificationChannelAsync('default', {
+      name: 'default',
+      importance: Notifications.AndroidImportance.MAX,
+      vibrationPattern: [0, 250, 250, 250],
+      lightColor: '#FF231F7C',
+    });
+  }
+
+  if (Device.isDevice) {
+    const { status: existingStatus } = await Notifications.getPermissionsAsync();
+    let finalStatus = existingStatus;
+    if (existingStatus !== 'granted') {
+      const { status } = await Notifications.requestPermissionsAsync();
+      finalStatus = status;
+    }
+    if (finalStatus !== 'granted') {
+      return null;
+    }
+    token = (await Notifications.getExpoPushTokenAsync({ projectId: '8bb4b263-af83-4e90-a3d0-b4d1d5256812' })).data;
+  } else {
+    console.log('You must use a physical device for Push Notifications');
+  }
+
+  return token;
+}
+
 export const AuthProvider = ({ children }: AuthProviderProps) => {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [user, setUser] = useState<UserInfo>();
-  const decodificador = jwtDecode;
+  const [loading, setLoading] = useState(true);
   const router = useRouter();
 
   useEffect(() => {
-    const subscription = Notifications.addNotificationReceivedListener(notification => {
-    });
-  
-    return () => subscription.remove();
+    loadStoredToken();
   }, []);
-  
 
-  async function registerForPushNotificationsAsync() {
+  const loadStoredToken = async () => {
     try {
-      if (Device.isDevice) {
-        const { status: existingStatus } = await Notifications.getPermissionsAsync();
-        let finalStatus = existingStatus;
-        if (existingStatus !== 'granted') {
-          const { status } = await Notifications.requestPermissionsAsync();
-          finalStatus = status;
-        }
-        if (finalStatus !== 'granted') {
-          console.log('Permissão para notificações não concedida!');
-          return;
-        }
-  
-        console.log('Obtendo token de notificação...');
-        const tokenData = await Notifications.getExpoPushTokenAsync({
-          projectId: "8bb4b263-af83-4e90-a3d0-b4d1d5256812"
-        });
+      const token = await SecureStore.getItemAsync('token');
+      if (token) {
+        api.defaults.headers['Authorization'] = `Bearer ${token}`;
+        const decodedToken = decodificador(token);
         
-        return tokenData.data;
-      } else {
-        console.log('Você deve usar um dispositivo físico para notificações push');
+        try {
+          const JsonUserInfos = decodedToken.sub ? JSON.parse(decodedToken.sub) : null;
+          if (JsonUserInfos) {
+            setUser(JsonUserInfos);
+            setIsAuthenticated(true);
+          }
+        } catch (error) {
+          console.error('Erro ao analisar informações do usuário:', error);
+        }
       }
     } catch (error) {
-      return null;
+      console.error('Erro ao carregar token armazenado:', error);
+    } finally {
+      setLoading(false);
     }
-  }
-  
+  };
 
   const login = async (email: string, password: string) => {
     try {
@@ -98,6 +125,7 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
       setIsAuthenticated(true);
       
       // Redirecionar para a página principal
+      router.dismissAll();
       router.replace('/pages/Default');
     } catch (error: unknown) {
     }
@@ -108,36 +136,56 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
       await SecureStore.deleteItemAsync('token');
       setIsAuthenticated(false);
       setUser(undefined);
+      router.dismissAll();
       router.replace('/pages/auth/Login');
     } catch (error) {
     }
   };
-
+  
   const validateToken = async () => {
-    const token = await SecureStore.getItemAsync('token');
-    if (token) {
-      try {
-        const decodedToken = decodificador(token);
-        const isExpired = decodedToken?.exp ? decodedToken.exp * 1000 < Date.now() : true;
-
-        // Se o token estiver expirado, deslogar o usuário
-        if (isExpired) {
-          await logout();
-          return;
-        }
-
-        // Se o token for válido, configurar o cabeçalho de autenticação
-        api.defaults.headers['Authorization'] = `Bearer ${token}`;
-        setUser(decodedToken.sub ? JSON.parse(decodedToken.sub) : null);
-        setIsAuthenticated(true);
-      } catch (error) {
+    try {
+      const token = await SecureStore.getItemAsync('token');
+      if (!token) {
+        setIsAuthenticated(false);
+        return false;
       }
-    } else {
-      console.log("Nenhum token encontrado no SecureStore");
+  
+      // Pode adicionar aqui uma validação adicional do token, como verificar a expiração
+      const decodedToken = decodificador(token);
+      
+      // Verificar se exp existe antes de usá-lo
+      if (!decodedToken.exp) {
+        // Token inválido sem data de expiração
+        await SecureStore.deleteItemAsync('token');
+        setIsAuthenticated(false);
+        ErrorAlertComponent("Token inválido", "Por favor, faça login novamente.");
+        router.replace('/pages/auth/Login');
+        return false;
+      }
+      
+      const expirationDate = new Date(decodedToken.exp * 1000); // Converter de segundos para milissegundos
+      const currentDate = new Date();
+  
+      if (expirationDate < currentDate) {
+        // Token expirado
+        await SecureStore.deleteItemAsync('token');
+        setIsAuthenticated(false);
+        ErrorAlertComponent("Sessão expirada", "Sua sessão expirou. Por favor, faça login novamente.");
+        router.replace('/pages/auth/Login');
+        return false;
+      }
+  
+      // Preserva o estado de autenticação atual se o token for válido
+      return isAuthenticated;
+    } catch (error) {
+      console.error('Erro ao validar token:', error);
+      setIsAuthenticated(false);
+      return false;
     }
   };
+
   return (
-    <AuthContext.Provider value={{ isAuthenticated, login, logout, user, validateToken }}>
+    <AuthContext.Provider value={{ isAuthenticated, login, logout, validateToken, user }}>
       {children}
     </AuthContext.Provider>
   );

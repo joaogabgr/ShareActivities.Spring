@@ -5,7 +5,7 @@ import ToDoComponent from "@/src/app/components/ToDoComponent/ToDoComponent";
 import { AuthContext } from "@/src/contexts/AuthContext";
 import { colors, fonts, shadows, spacing } from "@/src/globalCSS";
 import { useCallback, useContext, useEffect, useState } from "react";
-import { SafeAreaView, StyleSheet, Text, View, Alert, ScrollView, TouchableOpacity, ActivityIndicator } from "react-native";
+import { View, StyleSheet, Text, Alert, ScrollView, TouchableOpacity, ActivityIndicator } from "react-native";
 import { FontAwesomeIcon } from "@fortawesome/react-native-fontawesome";
 import { faArrowLeft, faChevronDown, faChevronUp } from "@fortawesome/free-solid-svg-icons";
 import { useRouter, useLocalSearchParams } from "expo-router";
@@ -219,7 +219,7 @@ export default function ToDo() {
     }, [fetchActivities, params.refresh, authContext.isAuthenticated]);
 
     return (
-        <SafeAreaView style={styles.container}>
+        <View style={styles.container}>
             <Header />
             <View style={styles.contentContainer}>
                 {isGroupView ? (
@@ -251,7 +251,7 @@ export default function ToDo() {
                 familyId={isGroupView ? familyId : undefined} 
                 familyName={isGroupView ? familyName : undefined}
             />
-        </SafeAreaView>
+        </View>
     );
 }
 

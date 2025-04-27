@@ -7,7 +7,6 @@ import Header from '@/src/app/components/header/Header';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { FontAwesomeIcon } from '@fortawesome/react-native-fontawesome';
 import { faArrowLeft } from '@fortawesome/free-solid-svg-icons';
-import { SafeAreaView } from 'react-native-safe-area-context';
 
 const ToDoDetails: React.FC = () => {
     const params = useLocalSearchParams();
@@ -59,7 +58,7 @@ const ToDoDetails: React.FC = () => {
 
 
     return (
-        <SafeAreaView style={styles.container}>
+        <View style={styles.container}>
             <Header />
             <View style={styles.header}>
                 <TouchableOpacity
@@ -126,7 +125,7 @@ const ToDoDetails: React.FC = () => {
                     </View>
                 </View>
             </ScrollView>
-        </SafeAreaView>
+        </View>
     );
 };
 

@@ -16,6 +16,7 @@ export default function Header() {
   };
 
   const handleMenu = () => {
+    router.dismissAll();
     router.replace("/pages/Default");
   }
 

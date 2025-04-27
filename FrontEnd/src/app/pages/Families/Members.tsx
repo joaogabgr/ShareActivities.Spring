@@ -22,7 +22,6 @@ import { FontAwesomeIcon } from "@fortawesome/react-native-fontawesome";
 import { faArrowLeft, faEnvelope, faUserPlus, faChevronUp, faChevronDown } from "@fortawesome/free-solid-svg-icons";
 import { AuthContext } from "@/src/contexts/AuthContext";
 import MemberCard from "@/src/app/components/FamilyComponent/MemberCard";
-import { SafeAreaView } from "react-native-safe-area-context";
 import Header from "@/src/app/components/header/Header";
 
 // Tipos para organizar membros em seções
@@ -224,7 +223,7 @@ export default function Members() {
 
   if (loading) {
     return (
-      <SafeAreaView style={styles.safeArea}>
+      <View style={styles.safeArea}>
         <Header />
         <View style={styles.contentContainer}>
           <View style={styles.loadingContainer}>
@@ -232,14 +231,14 @@ export default function Members() {
             <Text style={styles.loadingText}>Carregando membros...</Text>
           </View>
         </View>
-      </SafeAreaView>
+      </View>
     );
   }
 
   const hasMembers = members.length > 0;
 
   return (
-    <SafeAreaView style={styles.safeArea}>
+    <View style={styles.safeArea}>
       <Header />
       <View style={styles.contentContainer}>
         <View style={styles.pageTitle}>
@@ -339,7 +338,7 @@ export default function Members() {
           </ScrollView>
         )}
       </View>
-    </SafeAreaView>
+    </View>
   );
 }
 

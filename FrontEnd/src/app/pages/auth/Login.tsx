@@ -1,4 +1,4 @@
-import { View, Text, StyleSheet, TextInput, TouchableOpacity, SafeAreaView, Image, ActivityIndicator } from "react-native";
+import { View, Text, StyleSheet, TextInput, TouchableOpacity, Image, ActivityIndicator } from "react-native";
 import { useRouter } from "expo-router";
 import React, { useContext, useState } from "react";
 import { FontAwesomeIcon } from '@fortawesome/react-native-fontawesome';
@@ -47,7 +47,7 @@ export default function Login() {
   };
 
   return (
-    <SafeAreaView style={styles.container}>
+    <View style={styles.container}>
       <KeyboardAvoidingContainer formType="auth">
         <View style={styles.content}>
           <View style={styles.logoContainer}>
@@ -121,7 +121,7 @@ export default function Login() {
           </View>
         </View>
       </KeyboardAvoidingContainer>
-    </SafeAreaView>
+    </View>
   );
 }
 

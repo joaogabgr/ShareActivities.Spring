@@ -7,14 +7,15 @@ import lombok.NoArgsConstructor;
 
 @Data
 @NoArgsConstructor
-public class CreateFamiliesDTO implements DTO {
-    private String userEmail;
+public class UpdateFamilyDTO implements DTO {
+    private String id;
     private String name;
     private String description;
 
     @Override
     public Object toEntity() {
         Families families = new Families();
+        families.setId(id);
         families.setName(name);
         families.setDescription(description);
         return families;
@@ -22,6 +23,6 @@ public class CreateFamiliesDTO implements DTO {
 
     @Override
     public boolean isValid() {
-        return isNotNullOrEmpty(name);
+        return isNotNullOrEmpty(id) || isNotNullOrEmpty(name);
     }
-}
+} 

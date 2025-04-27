@@ -10,7 +10,6 @@ import {
 } from 'react-native';
 import { colors, spacing } from '@/src/globalCSS';
 import { useLocalSearchParams, useRouter } from 'expo-router';
-import { SafeAreaView } from 'react-native-safe-area-context';
 import { AuthContext } from '@/src/contexts/AuthContext';
 import Header from '@/src/app/components/header/Header';
 
@@ -121,18 +120,18 @@ export default function Chat() {
   
   if (loading) {
     return (
-      <SafeAreaView style={styles.safeArea}>
+      <View style={styles.safeArea}>
         <Header />
         <View style={styles.contentContainer}>
           <ChatHeader title="Chat do Grupo" groupName={name as string} onBack={handleBack} />
           <LoadingIndicator />
         </View>
-      </SafeAreaView>
+      </View>
     );
   }
   
   return (
-    <SafeAreaView style={styles.safeArea}>
+    <View style={styles.safeArea}>
       <Header />
       <KeyboardAvoidingView
         style={styles.container}
@@ -159,7 +158,7 @@ export default function Chat() {
           />
         </View>
       </KeyboardAvoidingView>
-    </SafeAreaView>
+    </View>
   );
 }
 

@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useContext, useCallback } from "react";
+import React, { useEffect, useState, useContext, useCallback, useRef } from "react";
 import {
   StyleSheet,
   Text,
@@ -12,12 +12,11 @@ import {
 import { colors, fonts, shadows, spacing } from "@/src/globalCSS";
 import { links } from "@/src/api/api";
 import { ErrorAlertComponent, SuccessAlertComponent } from "@/src/app/components/Alerts/AlertComponent";
-import { useRouter, useFocusEffect } from "expo-router";
+import { useRouter, useLocalSearchParams } from "expo-router";
 import { FontAwesomeIcon } from "@fortawesome/react-native-fontawesome";
 import { faChevronDown, faChevronUp, faPlus, faEnvelope } from "@fortawesome/free-solid-svg-icons";
 import FamilyCard from "@/src/app/components/FamilyComponent/FamilyCard";
 import { AuthContext } from "@/src/contexts/AuthContext";
-import { SafeAreaView } from "react-native-safe-area-context";
 import { Family as FamilyType } from "@/src/types/Family/Family";
 import Header from "@/src/app/components/header/Header";
 
@@ -25,6 +24,7 @@ interface ApiFamily {
   family: {
     id: string;
     name: string;
+    description: string;
   };
   isAdmin: boolean;
 }
@@ -45,31 +45,43 @@ export default function Families() {
     OWNED: true,
     MEMBER: true
   });
+  const [dataLoaded, setDataLoaded] = useState(false);
+  const updatedProcessed = useRef(false);
+  
   const router = useRouter();
   const authContext = useContext(AuthContext);
+  const params = useLocalSearchParams();
 
-  // Carrega os dados do usuário quando o componente é montado
+  // Carrega os dados do usuário apenas na primeira montagem do componente
   useEffect(() => {
-    loadUserData();
-  }, []);
+    if (!dataLoaded) {
+      loadUserData();
+    }
+  }, [dataLoaded]);
 
-  // Recarrega os dados quando a tela recebe foco
-  useFocusEffect(
-    useCallback(() => {
-      const email = authContext.user?.name;
-      if (email) {
-        fetchFamilies(email);
-      }
-      return () => {};
-    }, [authContext.user?.name])
-  );
+  // Verifica se precisa atualizar os dados baseado no parâmetro da rota
+  useEffect(() => {
+    // Verifica apenas se o parâmetro updated existe e tem valor "true"
+    const shouldUpdate = params.updated === "true";
+                        
+    if (shouldUpdate && userEmail && !updatedProcessed.current) {
+      console.log("Atualizando famílias...");
+      updatedProcessed.current = true;
+      
+      // Buscar os dados
+      fetchFamilies(userEmail);
+    } else if (params.updated === "false") {
+      updatedProcessed.current = false;
+    }
+  }, [params.updated, userEmail]);
 
   const loadUserData = async () => {
     try {
       const email = authContext.user?.name;
       if (email) {
         setUserEmail(email);
-        fetchFamilies(email);
+        await fetchFamilies(email);
+        setDataLoaded(true);
       } else {
         ErrorAlertComponent("Sessão expirada", "Por favor, faça login novamente.");
       }
@@ -110,6 +122,7 @@ export default function Families() {
     return {
       id: apiFamily.family.id,
       name: apiFamily.family.name,
+      description: apiFamily.family.description,
       isOwner: apiFamily.isAdmin,
     };
   };
@@ -135,13 +148,16 @@ export default function Families() {
   };
 
   const handleCreateFamily = () => {
-    router.push("/pages/Families/CreateFamily");
+    router.push({
+      pathname: "/pages/Families/CreateFamily", 
+      params: { needsUpdate: "true" }
+    });
   };
 
   const handleEditFamily = (id: string) => {
     router.push({
       pathname: "/pages/Families/EditFamily",
-      params: { id }
+      params: { id, needsUpdate: "true" }
     });
   };
 
@@ -161,14 +177,14 @@ export default function Families() {
   const handleInviteMembers = (id: string, name: string) => {
     router.push({
       pathname: "/pages/Families/InviteMembers",
-      params: { id, name }
+      params: { id, name, refresh: "false" }
     });
   };
 
   const handleViewMembers = (id: string, name: string) => {
     router.push({
       pathname: "/pages/Families/Members",
-      params: { id, name }
+      params: { id, name, refresh: "false" }
     });
   };
 
@@ -177,7 +193,7 @@ export default function Families() {
     if (family) {
       router.push({
         pathname: "/pages/Families/Chat",
-        params: { id, name: family.family.name }
+        params: { id, name: family.family.name, refresh: "false" }
       });
     }
   };
@@ -215,12 +231,15 @@ export default function Families() {
   };
 
   const navigateToInvitations = () => {
-    router.push('/pages/Families/InvitationsList');
+    router.push({
+      pathname: '/pages/Families/InvitationsList',
+      params: { refresh: "false" }
+    });
   };
 
   if (loading) {
     return (
-      <SafeAreaView style={styles.container}>
+      <View style={styles.container}>
         <Header />
         <View style={styles.contentContainer}>
           <View style={styles.titleRow}>
@@ -237,14 +256,14 @@ export default function Families() {
             <Text style={styles.loadingText}>Carregando grupos...</Text>
           </View>
         </View>
-      </SafeAreaView>
+      </View>
     );
   }
 
   const hasGroups = ownedFamilies.length > 0 || memberFamilies.length > 0;
 
   return (
-    <SafeAreaView style={styles.container}>
+    <View style={styles.container}>
       <Header />
       <View style={styles.contentContainer}>
         <View style={styles.titleRow}>
@@ -328,7 +347,7 @@ export default function Families() {
       >
         <FontAwesomeIcon icon={faPlus} size={24} color={colors.textLight} />
       </TouchableOpacity>
-    </SafeAreaView>
+    </View>
   );
 }
 
