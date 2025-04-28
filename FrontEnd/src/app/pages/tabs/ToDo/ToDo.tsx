@@ -4,11 +4,11 @@ import Header from "@/src/app/components/header/Header";
 import ToDoComponent from "@/src/app/components/ToDoComponent/ToDoComponent";
 import { AuthContext } from "@/src/contexts/AuthContext";
 import { colors, fonts, shadows, spacing } from "@/src/globalCSS";
-import { useCallback, useContext, useEffect, useState } from "react";
+import { useCallback, useContext, useState } from "react";
 import { View, StyleSheet, Text, Alert, ScrollView, TouchableOpacity, ActivityIndicator } from "react-native";
 import { FontAwesomeIcon } from "@fortawesome/react-native-fontawesome";
 import { faArrowLeft, faChevronDown, faChevronUp } from "@fortawesome/free-solid-svg-icons";
-import { useRouter, useLocalSearchParams } from "expo-router";
+import { useRouter, useLocalSearchParams, useFocusEffect } from "expo-router";
 import AddActivitiesButton from "@/src/app/components/AddActivitiesButton/AddActivitiesButton";
 import { ReadActivities } from "@/src/types/Activities/ReadActivities";
 import React from "react";
@@ -212,11 +212,13 @@ export default function ToDo() {
         });
     };
 
-    useEffect(() => {
-        if (authContext.isAuthenticated) {
-            fetchActivities();
-        }
-    }, [fetchActivities, params.refresh, authContext.isAuthenticated]);
+    useFocusEffect(
+        useCallback(() => {
+            if (authContext.isAuthenticated) {
+                fetchActivities();
+            }
+        }, [fetchActivities, authContext.isAuthenticated])
+    );
 
     return (
         <View style={styles.container}>

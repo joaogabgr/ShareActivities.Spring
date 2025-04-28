@@ -28,6 +28,8 @@ import {
   faXmark,
   faUpload,
   faTimes,
+  faChevronDown,
+  faChevronUp,
 } from "@fortawesome/free-solid-svg-icons";
 import { CreateActivities } from "@/src/types/Activities/CreateActivities";
 import { UpdateActivities } from "@/src/types/Activities/UpdateActivities";
@@ -71,6 +73,12 @@ export default function ActivityForm({ mode, activityData, onSuccess, familyId, 
   const [isLoading, setIsLoading] = useState(mode === "edit");
   const [activity, setActivity] = useState<any>(null);
   const authContext = useContext(AuthContext);
+  const [expandedSections, setExpandedSections] = useState({
+    basic: true,
+    notes: false,
+    dates: false,
+    attachments: false,
+  });
 
   useEffect(() => {
     if (mode === "edit" && activityData) {
@@ -429,21 +437,7 @@ export default function ActivityForm({ mode, activityData, onSuccess, familyId, 
       if (onSuccess) {
         onSuccess();
       } else {
-        if (familyId) {
-          router.push({
-            pathname: "/pages/tabs/ToDo/ToDo",
-            params: { 
-              refresh: Date.now().toString(),
-              familyId: familyId,
-              familyName: familyName
-            },
-          });
-        } else {
-          router.push({
-            pathname: "/pages/tabs/ToDo/ToDo",
-            params: { refresh: Date.now().toString() },
-          });
-        }
+        router.back()
       }
     } catch (error) {
       console.error("Erro ao salvar atividade:", error);
@@ -451,6 +445,13 @@ export default function ActivityForm({ mode, activityData, onSuccess, familyId, 
     } finally {
       setIsSubmitting(false);
     }
+  };
+
+  const toggleSection = (section: string) => {
+    setExpandedSections(prev => ({
+      ...prev,
+      [section as keyof typeof prev]: !prev[section as keyof typeof prev]
+    }));
   };
 
   if (isLoading) {
@@ -480,280 +481,328 @@ export default function ActivityForm({ mode, activityData, onSuccess, familyId, 
             </Text>
 
             <View style={[styles.formContainer, shadows.medium]}>
-              {/* Nome da atividade */}
-              <FormField
-                label="Nome da atividade"
-                value={title}
-                onChangeText={setTitle}
-                placeholder="Digite o nome da atividade"
-                icon={faTasksAlt}
-                required
-              />
+              {/* Seção Básica */}
+              <TouchableOpacity 
+                style={styles.sectionHeader}
+                onPress={() => toggleSection('basic')}
+              >
+                <Text style={styles.sectionTitle}>Informações Básicas *</Text>
+                <FontAwesomeIcon 
+                  icon={expandedSections.basic ? faChevronUp : faChevronDown} 
+                  size={16} 
+                  color={colors.textSecondary} 
+                />
+              </TouchableOpacity>
 
-              {/* Descrição */}
-              <FormField
-                label="Descrição"
-                value={description}
-                onChangeText={setDescription}
-                placeholder="Digite a descrição da atividade"
-                icon={faAlignLeft}
-                required
-              />
+              {expandedSections.basic && (
+                <View style={styles.sectionContent}>
+                  <FormField
+                    label="Nome da atividade"
+                    value={title}
+                    onChangeText={setTitle}
+                    placeholder="Digite o nome da atividade"
+                    icon={faTasksAlt}
+                    required
+                  />
 
-              {/* Tipo */}
-              <FormField
-                label="Tipo"
-                value={type}
-                onChangeText={setType}
-                placeholder="Digite o tipo da atividade"
-                icon={faTag}
-                required
-              />
+                  <FormField
+                    label="Descrição"
+                    value={description}
+                    onChangeText={setDescription}
+                    placeholder="Digite a descrição da atividade"
+                    icon={faAlignLeft}
+                    required
+                  />
 
-              {/* NOTAS */}
-              <FormField
-                label="Notas"
-                value={notes}
-                onChangeText={setNotes}
-                placeholder="Digite notas ou links relacionados à atividade"
-                icon={faAlignLeft}
-                isLinksField={true}
-              />
+                  <FormField
+                    label="Tipo"
+                    value={type}
+                    onChangeText={setType}
+                    placeholder="Digite o tipo da atividade"
+                    icon={faTag}
+                    required
+                  />
 
-              {/* Endereço */}
-              <FormField
-                label="Endereço"
-                value={location}
-                onChangeText={setLocation}
-                placeholder="Digite o endereço aonde a atividade será realizada"
-                icon={faTag}
-              />
+                  <StatusPicker
+                    status={status}
+                    onStatusChange={setStatus}
+                  />
 
-              {/* Dias para recuperar */}
-              <FormField
-                label="Dias para recuperar"
-                value={daysForRecover.toString()}
-                onChangeText={(text) => setDaysForRecover(Number(text.replace(/[^0-9]/g, "")))}
-                placeholder="Digite a quantidade de dias para recuperar"
-                icon={faFlag}
-                keyboardType="numeric"
-              />
-
-              {/* Status */}
-              <StatusPicker
-                status={status}
-                onStatusChange={setStatus}
-              />
-
-              {/* Prioridade */}
-              <PriorityPicker
-                priority={priority}
-                onPriorityChange={setPriority}
-              />
-
-              {/* Data */}
-              <View style={styles.datePickerContainer}>
-                <View style={styles.datePickerWrapper}>
-                  <DatePicker
-                    date={dateCreate}
-                    onDateChange={(newDate) => {
-                      // Verifica se a nova data é no futuro
-                      const today = new Date();
-                      today.setHours(0, 0, 0, 0);
-                      const selectedDate = new Date(newDate);
-                      selectedDate.setHours(0, 0, 0, 0);
-                      
-                      if (selectedDate >= today) {
-                        setDateCreate(newDate);
-                      } else {
-                        ErrorAlertComponent(
-                          "Data inválida",
-                          "A data não pode ser no passado."
-                        );
-                      }
-                    }}
-                    label="Data"
+                  <PriorityPicker
+                    priority={priority}
+                    onPriorityChange={setPriority}
                   />
                 </View>
-                <TouchableOpacity
-                  style={styles.clearButton}
-                  onPress={() => {
-                    setDateCreate(null);
-                  }}
-                >
-                  <FontAwesomeIcon icon={faTimes} size={14} color={colors.error} />
-                </TouchableOpacity>
-              </View>
+              )}
 
-              {/* Data de expiração */}
-              <View style={styles.datePickerContainer}>
-                <View style={styles.datePickerWrapper}>
-                  <DatePicker
-                    date={expirationDate}
-                    onDateChange={(newDate) => {
-                      if (!dateCreate) {
-                        ErrorAlertComponent(
-                          "Data inválida",
-                          "Por favor, selecione primeiro a data."
-                        );
-                        return;
-                      }
+              {/* Seção de Notas e Localização */}
+              <TouchableOpacity 
+                style={styles.sectionHeader}
+                onPress={() => toggleSection('notes')}
+              >
+                <Text style={styles.sectionTitle}>Notas e Localização</Text>
+                <FontAwesomeIcon 
+                  icon={expandedSections.notes ? faChevronUp : faChevronDown} 
+                  size={16} 
+                  color={colors.textSecondary} 
+                />
+              </TouchableOpacity>
 
-                      const selectedDate = new Date(newDate);
-                      const creationDate = new Date(dateCreate);
-                      
-                      // Ajusta as horas para comparar apenas as datas
-                      selectedDate.setHours(0, 0, 0, 0);
-                      creationDate.setHours(0, 0, 0, 0);
-                      
-                      if (selectedDate > creationDate) {
-                        setExpirationDate(newDate);
-                      } else {
-                        ErrorAlertComponent(
-                          "Data inválida",
-                          "A data de expiração deve ser posterior à data."
-                        );
-                      }
-                    }}
-                    label="Data de expiração"
+              {expandedSections.notes && (
+                <View style={styles.sectionContent}>
+                  <FormField
+                    label="Notas"
+                    value={notes}
+                    onChangeText={setNotes}
+                    placeholder="Digite notas ou links relacionados à atividade"
+                    icon={faAlignLeft}
+                    isLinksField={true}
+                  />
+
+                  <FormField
+                    label="Endereço"
+                    value={location}
+                    onChangeText={setLocation}
+                    placeholder="Digite o endereço aonde a atividade será realizada"
+                    icon={faTag}
                   />
                 </View>
-                <TouchableOpacity
-                  style={styles.clearButton}
-                  onPress={() => {
-                    setExpirationDate(null);
-                  }}
-                >
-                  <FontAwesomeIcon icon={faTimes} size={14} color={colors.error} />
-                </TouchableOpacity>
-              </View>
+              )}
+
+              {/* Seção de Datas */}
+              <TouchableOpacity 
+                style={styles.sectionHeader}
+                onPress={() => toggleSection('dates')}
+              >
+                <Text style={styles.sectionTitle}>Datas e Recorrência</Text>
+                <FontAwesomeIcon 
+                  icon={expandedSections.dates ? faChevronUp : faChevronDown} 
+                  size={16} 
+                  color={colors.textSecondary} 
+                />
+              </TouchableOpacity>
+
+              {expandedSections.dates && (
+                <View style={styles.sectionContent}>
+                  <View style={styles.datePickerContainer}>
+                    <View style={styles.datePickerWrapper}>
+                      <DatePicker
+                        date={dateCreate}
+                        onDateChange={(newDate) => {
+                          const today = new Date();
+                          today.setHours(0, 0, 0, 0);
+                          const selectedDate = new Date(newDate);
+                          selectedDate.setHours(0, 0, 0, 0);
+                          
+                          if (selectedDate >= today) {
+                            setDateCreate(newDate);
+                          } else {
+                            ErrorAlertComponent(
+                              "Data inválida",
+                              "A data não pode ser no passado."
+                            );
+                          }
+                        }}
+                        label="Data"
+                      />
+                    </View>
+                    <TouchableOpacity
+                      style={styles.clearButton}
+                      onPress={() => setDateCreate(null)}
+                    >
+                      <FontAwesomeIcon icon={faTimes} size={14} color={colors.error} />
+                    </TouchableOpacity>
+                  </View>
+
+                  <View style={styles.datePickerContainer}>
+                    <View style={styles.datePickerWrapper}>
+                      <DatePicker
+                        date={expirationDate}
+                        onDateChange={(newDate) => {
+                          if (!dateCreate) {
+                            ErrorAlertComponent(
+                              "Data inválida",
+                              "Por favor, selecione primeiro a data."
+                            );
+                            return;
+                          }
+
+                          const selectedDate = new Date(newDate);
+                          const creationDate = new Date(dateCreate);
+                          
+                          selectedDate.setHours(0, 0, 0, 0);
+                          creationDate.setHours(0, 0, 0, 0);
+                          
+                          if (selectedDate > creationDate) {
+                            setExpirationDate(newDate);
+                          } else {
+                            ErrorAlertComponent(
+                              "Data inválida",
+                              "A data de expiração deve ser posterior à data."
+                            );
+                          }
+                        }}
+                        label="Data de expiração"
+                      />
+                    </View>
+                    <TouchableOpacity
+                      style={styles.clearButton}
+                      onPress={() => setExpirationDate(null)}
+                    >
+                      <FontAwesomeIcon icon={faTimes} size={14} color={colors.error} />
+                    </TouchableOpacity>
+                  </View>
+
+                  <FormField
+                    label="Dias para recuperar"
+                    value={daysForRecover.toString()}
+                    onChangeText={(text) => setDaysForRecover(Number(text.replace(/[^0-9]/g, "")))}
+                    placeholder="Digite a quantidade de dias para recuperar"
+                    icon={faFlag}
+                    keyboardType="numeric"
+                  />
+                </View>
+              )}
 
               {/* Seção de Anexos */}
-              <View style={styles.attachmentsSection}>
-                <Text style={styles.attachmentsTitle}>Anexos</Text>
-                <Text style={styles.attachmentsSubtitle}>Adicione até um documento, foto e links</Text>
-                
-                {/* Documento */}
-                <View style={styles.attachmentItem}>
-                  <View style={styles.attachmentHeader}>
-                    <View style={styles.attachmentTitleContainer}>
-                      <FontAwesomeIcon icon={faFile} size={16} color={colors.primary} />
-                      <Text style={styles.attachmentTypeTitle}>Documento</Text>
+              <TouchableOpacity 
+                style={styles.sectionHeader}
+                onPress={() => toggleSection('attachments')}
+              >
+                <Text style={styles.sectionTitle}>Anexos</Text>
+                <FontAwesomeIcon 
+                  icon={expandedSections.attachments ? faChevronUp : faChevronDown} 
+                  size={16} 
+                  color={colors.textSecondary} 
+                />
+              </TouchableOpacity>
+
+              {expandedSections.attachments && (
+                <View style={styles.sectionContent}>
+                  <Text style={styles.attachmentsSubtitle}>Adicione até um documento, foto e links</Text>
+                  
+                  {/* Documento */}
+                  <View style={styles.attachmentItem}>
+                    <View style={styles.attachmentHeader}>
+                      <View style={styles.attachmentTitleContainer}>
+                        <FontAwesomeIcon icon={faFile} size={16} color={colors.primary} />
+                        <Text style={styles.attachmentTypeTitle}>Documento</Text>
+                      </View>
+                      
+                      {!documentUrl ? (
+                        <TouchableOpacity
+                          style={styles.attachButton}
+                          onPress={selectDocument}
+                        >
+                          <FontAwesomeIcon icon={faUpload} size={14} color={colors.primary} />
+                          <Text style={styles.attachButtonText}>Adicionar</Text>
+                        </TouchableOpacity>
+                      ) : (
+                        <TouchableOpacity
+                          style={[styles.attachButton, styles.removeButton]}
+                          onPress={() => {
+                            setDocumentUrl(null);
+                            setDocumentName(null);
+                          }}
+                        >
+                          <FontAwesomeIcon icon={faXmark} size={14} color={colors.error} />
+                          <Text style={[styles.attachButtonText, styles.removeButtonText]}>Remover</Text>
+                        </TouchableOpacity>
+                      )}
                     </View>
                     
-                    {!documentUrl ? (
-                      <TouchableOpacity
-                        style={styles.attachButton}
-                        onPress={selectDocument}
-                      >
-                        <FontAwesomeIcon icon={faUpload} size={14} color={colors.primary} />
-                        <Text style={styles.attachButtonText}>Adicionar</Text>
-                      </TouchableOpacity>
+                    {documentUrl && documentName && (
+                      <View style={styles.attachmentPreview}>
+                        <FontAwesomeIcon icon={faFile} size={20} color={colors.primary} />
+                        <Text style={styles.documentName} numberOfLines={1} ellipsizeMode="middle">
+                          {documentName}
+                        </Text>
+                      </View>
+                    )}
+                  </View>
+                  
+                  {/* Foto */}
+                  <View style={styles.attachmentItem}>
+                    <View style={styles.attachmentHeader}>
+                      <View style={styles.attachmentTitleContainer}>
+                        <FontAwesomeIcon icon={faImage} size={16} color={colors.primary} />
+                        <Text style={styles.attachmentTypeTitle}>Foto</Text>
+                      </View>
+                      
+                      {!photoUrl ? (
+                        <TouchableOpacity
+                          style={styles.attachButton}
+                          onPress={selectImage}
+                        >
+                          <FontAwesomeIcon icon={faUpload} size={14} color={colors.primary} />
+                          <Text style={styles.attachButtonText}>Adicionar</Text>
+                        </TouchableOpacity>
+                      ) : (
+                        <TouchableOpacity
+                          style={[styles.attachButton, styles.removeButton]}
+                          onPress={() => setPhotoUrl(null)}
+                        >
+                          <FontAwesomeIcon icon={faXmark} size={14} color={colors.error} />
+                          <Text style={[styles.attachButtonText, styles.removeButtonText]}>Remover</Text>
+                        </TouchableOpacity>
+                      )}
+                    </View>
+                    
+                    {photoUrl && (
+                      <Image 
+                        source={{ uri: photoUrl }} 
+                        style={styles.imagePreview} 
+                        resizeMode="cover"
+                      />
+                    )}
+                  </View>
+                  
+                  {/* Link */}
+                  <View style={styles.attachmentItem}>
+                    <View style={styles.attachmentHeader}>
+                      <View style={styles.attachmentTitleContainer}>
+                        <FontAwesomeIcon icon={faLink} size={16} color={colors.primary} />
+                        <Text style={styles.attachmentTypeTitle}>Links (máx. 3)</Text>
+                      </View>
+                      
+                      {links.length < 3 && (
+                        <TouchableOpacity
+                          style={styles.attachButton}
+                          onPress={addLink}
+                        >
+                          <FontAwesomeIcon icon={faUpload} size={14} color={colors.primary} />
+                          <Text style={styles.attachButtonText}>Adicionar</Text>
+                        </TouchableOpacity>
+                      )}
+                    </View>
+                    
+                    {links.length > 0 ? (
+                      <View style={styles.linksContainer}>
+                        {links.map((url, index) => (
+                          <View key={index} style={styles.linkItem}>
+                            <TouchableOpacity 
+                              style={styles.linkPreview}
+                              onPress={() => openLink(url)}
+                            >
+                              <Text style={styles.linkText} numberOfLines={1} ellipsizeMode="middle">
+                                {url}
+                              </Text>
+                            </TouchableOpacity>
+                            <TouchableOpacity
+                              style={styles.removeLinkButton}
+                              onPress={() => removeLink(index)}
+                            >
+                              <FontAwesomeIcon icon={faXmark} size={14} color={colors.error} />
+                            </TouchableOpacity>
+                          </View>
+                        ))}
+                      </View>
                     ) : (
-                      <TouchableOpacity
-                        style={[styles.attachButton, styles.removeButton]}
-                        onPress={() => {
-                          setDocumentUrl(null);
-                          setDocumentName(null);
-                        }}
-                      >
-                        <FontAwesomeIcon icon={faXmark} size={14} color={colors.error} />
-                        <Text style={[styles.attachButtonText, styles.removeButtonText]}>Remover</Text>
-                      </TouchableOpacity>
+                      <Text style={styles.noLinksText}>Nenhum link adicionado</Text>
                     )}
                   </View>
-                  
-                  {documentUrl && documentName && (
-                    <View style={styles.attachmentPreview}>
-                      <FontAwesomeIcon icon={faFile} size={20} color={colors.primary} />
-                      <Text style={styles.documentName} numberOfLines={1} ellipsizeMode="middle">
-                        {documentName}
-                      </Text>
-                    </View>
-                  )}
                 </View>
-                
-                {/* Foto */}
-                <View style={styles.attachmentItem}>
-                  <View style={styles.attachmentHeader}>
-                    <View style={styles.attachmentTitleContainer}>
-                      <FontAwesomeIcon icon={faImage} size={16} color={colors.primary} />
-                      <Text style={styles.attachmentTypeTitle}>Foto</Text>
-                    </View>
-                    
-                    {!photoUrl ? (
-                      <TouchableOpacity
-                        style={styles.attachButton}
-                        onPress={selectImage}
-                      >
-                        <FontAwesomeIcon icon={faUpload} size={14} color={colors.primary} />
-                        <Text style={styles.attachButtonText}>Adicionar</Text>
-                      </TouchableOpacity>
-                    ) : (
-                      <TouchableOpacity
-                        style={[styles.attachButton, styles.removeButton]}
-                        onPress={() => setPhotoUrl(null)}
-                      >
-                        <FontAwesomeIcon icon={faXmark} size={14} color={colors.error} />
-                        <Text style={[styles.attachButtonText, styles.removeButtonText]}>Remover</Text>
-                      </TouchableOpacity>
-                    )}
-                  </View>
-                  
-                  {photoUrl && (
-                    <Image 
-                      source={{ uri: photoUrl }} 
-                      style={styles.imagePreview} 
-                      resizeMode="cover"
-                    />
-                  )}
-                </View>
-                
-                {/* Link */}
-                <View style={styles.attachmentItem}>
-                  <View style={styles.attachmentHeader}>
-                    <View style={styles.attachmentTitleContainer}>
-                      <FontAwesomeIcon icon={faLink} size={16} color={colors.primary} />
-                      <Text style={styles.attachmentTypeTitle}>Links (máx. 3)</Text>
-                    </View>
-                    
-                    {links.length < 3 && (
-                      <TouchableOpacity
-                        style={styles.attachButton}
-                        onPress={addLink}
-                      >
-                        <FontAwesomeIcon icon={faUpload} size={14} color={colors.primary} />
-                        <Text style={styles.attachButtonText}>Adicionar</Text>
-                      </TouchableOpacity>
-                    )}
-                  </View>
-                  
-                  {links.length > 0 ? (
-                    <View style={styles.linksContainer}>
-                      {links.map((url, index) => (
-                        <View key={index} style={styles.linkItem}>
-                          <TouchableOpacity 
-                            style={styles.linkPreview}
-                            onPress={() => openLink(url)}
-                          >
-                            <Text style={styles.linkText} numberOfLines={1} ellipsizeMode="middle">
-                              {url}
-                            </Text>
-                          </TouchableOpacity>
-                          <TouchableOpacity
-                            style={styles.removeLinkButton}
-                            onPress={() => removeLink(index)}
-                          >
-                            <FontAwesomeIcon icon={faXmark} size={14} color={colors.error} />
-                          </TouchableOpacity>
-                        </View>
-                      ))}
-                    </View>
-                  ) : (
-                    <Text style={styles.noLinksText}>Nenhum link adicionado</Text>
-                  )}
-                </View>
-              </View>
+              )}
 
               {/* Botões */}
               <View style={styles.buttonContainer}>
@@ -996,5 +1045,21 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: colors.error,
     marginLeft: spacing.small,
+  },
+  sectionHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    paddingVertical: spacing.medium,
+    borderBottomWidth: 1,
+    borderBottomColor: colors.divider,
+  },
+  sectionTitle: {
+    fontSize: fonts.size.large,
+    fontWeight: fonts.weight.semiBold,
+    color: colors.textPrimary,
+  },
+  sectionContent: {
+    paddingVertical: spacing.medium,
   },
 });

@@ -125,7 +125,6 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
       setIsAuthenticated(true);
       
       // Redirecionar para a página principal
-      router.dismissAll();
       router.replace('/pages/Default');
     } catch (error: unknown) {
     }
@@ -136,7 +135,6 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
       await SecureStore.deleteItemAsync('token');
       setIsAuthenticated(false);
       setUser(undefined);
-      router.dismissAll();
       router.replace('/pages/auth/Login');
     } catch (error) {
     }
@@ -174,6 +172,8 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
         router.replace('/pages/auth/Login');
         return false;
       }
+
+      api.defaults.headers['Authorization'] = ``;
   
       // Preserva o estado de autenticação atual se o token for válido
       return isAuthenticated;

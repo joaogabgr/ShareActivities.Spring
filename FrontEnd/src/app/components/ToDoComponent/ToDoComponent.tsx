@@ -124,8 +124,8 @@ export default function ToDoComponent(props: ToDoComponentProps) {
         (!props.photoUrl && !props.documentUrl && !props.linkUrl) ? '• Nenhum anexo' : '',
       ].filter(Boolean).join('\n');
 
-      // Usar a data de expiração como data de início se existir
-      const startDate = props.dateExpire ? new Date(props.dateExpire) : new Date(props.dateCreated);
+      // Usar a data de criação como data de início
+      const startDate = new Date(props.dateCreated);
       if (isNaN(startDate.getTime())) {
         throw new Error('Data de início inválida');
       }
@@ -146,7 +146,8 @@ export default function ToDoComponent(props: ToDoComponentProps) {
             recurrenceRule = {
               frequency: Calendar.Frequency.DAILY,
               interval: diffDays,
-              endDate: recoverDate,
+              // Usar a data de expiração como data limite se existir
+              endDate: props.dateExpire ? new Date(props.dateExpire) : undefined
             };
           }
         }
@@ -506,13 +507,15 @@ export default function ToDoComponent(props: ToDoComponentProps) {
             </View>
 
             {/* Botão para vincular ao calendário */}
-            <TouchableOpacity 
-              style={styles.calendarButton}
-              onPress={vincularAoCalendario}
-            >
-              <FontAwesomeIcon icon={faCalendarPlus} size={14} color={colors.primary} />
-              <Text style={styles.calendarButtonText}>Vincular ao Calendário</Text>
-            </TouchableOpacity>
+            {props.status !== "DONE" && (
+              <TouchableOpacity 
+                style={styles.calendarButton}
+                onPress={vincularAoCalendario}
+              >
+                <FontAwesomeIcon icon={faCalendarPlus} size={14} color={colors.primary} />
+                <Text style={styles.calendarButtonText}>Vincular ao Calendário</Text>
+              </TouchableOpacity>
+            )}
 
             {/* Botão para abrir modal se houver anexos */}
             {hasAttachments && (

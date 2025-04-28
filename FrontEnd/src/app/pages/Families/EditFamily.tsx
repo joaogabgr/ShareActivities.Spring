@@ -45,10 +45,7 @@ export default function EditFamily() {
       const userEmail = authContext.user?.name;
       if (!userEmail) {
         ErrorAlertComponent("Erro", "Usuário não autenticado");
-        router.dismissAll();
-        router.replace({
-          pathname: "/pages/tabs/MyFamily/MyFamily"
-        });
+        router.back();
         return;
       }
 
@@ -63,10 +60,7 @@ export default function EditFamily() {
       
       if (!foundFamily.isAdmin) {
         ErrorAlertComponent("Acesso negado", "Você não tem permissão para editar este grupo");
-        router.dismissAll();
-        router.replace({
-          pathname: "/pages/tabs/MyFamily/MyFamily"
-        });
+        router.back();
         return;
       }
 
@@ -84,10 +78,7 @@ export default function EditFamily() {
     } catch (error) {
       console.error("Erro ao buscar detalhes do grupo:", error);
       ErrorAlertComponent("Erro", "Não foi possível carregar os detalhes do grupo");
-      router.dismissAll();
-      router.replace({
-        pathname: "/pages/tabs/MyFamily/MyFamily"
-      });
+      router.back();
     } finally {
       setLoading(false);
     }
@@ -116,16 +107,10 @@ export default function EditFamily() {
         "As alterações foram salvas com sucesso!"
       );
 
-      // Usar replace para garantir que o parâmetro chegue corretamente
-      router.dismissAll();
-      router.replace({
-        pathname: "/pages/tabs/MyFamily/MyFamily",
-        params: { updated: "true" }
-      });
+      router.back();
       
-      // Depois de 1 segundo, redefinir o parâmetro para false
       setTimeout(() => {
-        router.setParams({ updated: "false" });
+        router.setParams({ updated: "true" });
       }, 1000);
     } catch (error) {
       console.error("Erro ao atualizar grupo:", error);
@@ -160,16 +145,10 @@ export default function EditFamily() {
         "O grupo foi excluído com sucesso!"
       );
       
-      // Usar replace para garantir que o parâmetro chegue corretamente
-      router.dismissAll();
-      router.replace({
-        pathname: "/pages/tabs/MyFamily/MyFamily",
-        params: { updated: "true" }
-      });
+      router.back();
       
-      // Depois de 1 segundo, redefinir o parâmetro para false
       setTimeout(() => {
-        router.setParams({ updated: "false" });
+        router.setParams({ updated: "true" });
       }, 1000);
     } catch (error) {
       setSaving(false);

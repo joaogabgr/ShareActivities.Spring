@@ -70,6 +70,8 @@ public class CreateActivitiesImpl implements CreateActivitiesUseCase {
                 activities.setDateExpire(createActivitiesDTO.getDateExpire().minusHours(3));
             }
 
+
+
             activitiesRepository.save(activities);
 
             if (activities.getFamily() != null) {

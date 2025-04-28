@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useContext, useCallback, useRef } from "react";
+import React, { useState, useContext, useCallback, useRef } from "react";
 import {
   StyleSheet,
   Text,
@@ -12,7 +12,7 @@ import {
 import { colors, fonts, shadows, spacing } from "@/src/globalCSS";
 import { links } from "@/src/api/api";
 import { ErrorAlertComponent, SuccessAlertComponent } from "@/src/app/components/Alerts/AlertComponent";
-import { useRouter, useLocalSearchParams } from "expo-router";
+import { useRouter, useLocalSearchParams, useFocusEffect } from "expo-router";
 import { FontAwesomeIcon } from "@fortawesome/react-native-fontawesome";
 import { faChevronDown, faChevronUp, faPlus, faEnvelope } from "@fortawesome/free-solid-svg-icons";
 import FamilyCard from "@/src/app/components/FamilyComponent/FamilyCard";
@@ -52,29 +52,6 @@ export default function Families() {
   const authContext = useContext(AuthContext);
   const params = useLocalSearchParams();
 
-  // Carrega os dados do usuário apenas na primeira montagem do componente
-  useEffect(() => {
-    if (!dataLoaded) {
-      loadUserData();
-    }
-  }, [dataLoaded]);
-
-  // Verifica se precisa atualizar os dados baseado no parâmetro da rota
-  useEffect(() => {
-    // Verifica apenas se o parâmetro updated existe e tem valor "true"
-    const shouldUpdate = params.updated === "true";
-                        
-    if (shouldUpdate && userEmail && !updatedProcessed.current) {
-      console.log("Atualizando famílias...");
-      updatedProcessed.current = true;
-      
-      // Buscar os dados
-      fetchFamilies(userEmail);
-    } else if (params.updated === "false") {
-      updatedProcessed.current = false;
-    }
-  }, [params.updated, userEmail]);
-
   const loadUserData = async () => {
     try {
       const email = authContext.user?.name;
@@ -89,6 +66,29 @@ export default function Families() {
       console.error("Erro ao carregar dados do usuário:", error);
     }
   };
+
+  useFocusEffect(
+    useCallback(() => {
+      if (!dataLoaded) {
+        loadUserData();
+      }
+
+      // Verifica se precisa atualizar os dados baseado no parâmetro da rota
+      const shouldUpdate = params.updated === "true";
+      if (shouldUpdate && userEmail && !updatedProcessed.current) {
+        console.log("Atualizando famílias...");
+        updatedProcessed.current = true;
+        fetchFamilies(userEmail);
+      } else if (params.updated === "false") {
+        updatedProcessed.current = false;
+      }
+
+      return () => {
+        // Cleanup function
+        updatedProcessed.current = false;
+      };
+    }, [dataLoaded, params.updated, userEmail])
+  );
 
   const fetchFamilies = async (email: string) => {
     try {

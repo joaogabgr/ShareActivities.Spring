@@ -58,14 +58,10 @@ export default function CreateFamily() {
         "Seu grupo foi criado com sucesso!"
       );
 
-      router.dismissAll();
-      router.replace({
-        pathname: "/pages/tabs/MyFamily/MyFamily",
-        params: { updated: "true" }
-      });
-      
+      router.back();
+
       setTimeout(() => {
-        router.setParams({ updated: "false" });
+        router.setParams({ updated: "true" });
       }, 1000);
     } catch (error) {
       console.error("Erro ao criar grupo:", error);
