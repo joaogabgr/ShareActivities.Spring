@@ -155,6 +155,8 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
       if (!decodedToken.exp) {
         // Token inválido sem data de expiração
         await SecureStore.deleteItemAsync('token');
+        api.defaults.headers['Authorization'] = ``;
+
         setIsAuthenticated(false);
         ErrorAlertComponent("Token inválido", "Por favor, faça login novamente.");
         router.replace('/pages/auth/Login');
@@ -167,6 +169,7 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
       if (expirationDate < currentDate) {
         // Token expirado
         await SecureStore.deleteItemAsync('token');
+        api.defaults.headers['Authorization'] = ``;
         setIsAuthenticated(false);
         ErrorAlertComponent("Sessão expirada", "Sua sessão expirou. Por favor, faça login novamente.");
         router.replace('/pages/auth/Login');
