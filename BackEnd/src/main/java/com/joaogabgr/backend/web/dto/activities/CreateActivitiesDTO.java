@@ -29,6 +29,7 @@ public class CreateActivitiesDTO implements DTO {
     private String documentUrl;
     private String photoName;
     private String documentName;
+    private boolean warning;
 
     @Override
     public Activities toEntity() {
@@ -51,6 +52,7 @@ public class CreateActivitiesDTO implements DTO {
         activities.setImageName(photoName);
         activities.setDocumentName(documentName);
         activities.setLinkUrl(linkUrl);
+        activities.setWarning(warning);
         return activities;
     }
 

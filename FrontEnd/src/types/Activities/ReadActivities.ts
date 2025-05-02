@@ -19,4 +19,5 @@ export type ReadActivities = {
     linkUrl?: string;
     photoName?: string;
     documentName?: string;
+    warning?: boolean | string;
 };

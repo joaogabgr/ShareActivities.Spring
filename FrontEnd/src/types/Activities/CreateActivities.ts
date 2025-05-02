@@ -17,4 +17,5 @@ export type CreateActivities = {
     linkUrl?: string | null;
     documentName?: string | null;
     photoName?: string | null;
+    warning?: boolean | string;
 };

@@ -37,6 +37,9 @@ import {
   faExternalLinkAlt,
   faDownload,
   faCalendarPlus,
+  faBell,
+  faBellSlash,
+  faLocationDot,
 } from "@fortawesome/free-solid-svg-icons";
 import React, { useEffect, useState } from "react";
 import { useLocation } from "@/src/contexts/LocationContext";
@@ -56,6 +59,21 @@ export default function ToDoComponent(props: ToDoComponentProps) {
   const [proximidade, setProximidade] = useState(false);
   const [modalVisible, setModalVisible] = useState(false);
   const [calendarPermission, setCalendarPermission] = useState<boolean>(false);
+
+  // Função auxiliar para converter o warning para booleano
+  const isWarningEnabled = () => {
+    // Se undefined, retorna false
+    if (props.warning === undefined) return false;
+    
+    // Se for string "false", retorna false
+    if (props.warning === "false") return false;
+    
+    // Se for boolean false, retorna false
+    if (props.warning === false) return false;
+    
+    // Em qualquer outro caso (true, "true", ou qualquer outro valor), retorna true
+    return true;
+  };
 
   // Calcula a distância quando a localização do usuário muda ou quando o componente é montado
   useEffect(() => {
@@ -409,20 +427,31 @@ export default function ToDoComponent(props: ToDoComponentProps) {
           <View style={styles.header}>
             <View style={styles.titleContainer}>
               <Text style={styles.title}>{props.name}</Text>
-              <View style={[styles.statusBadge, { backgroundColor: getStatusColor(props.status) }]}>
-                <Text style={styles.statusText}>{getStatus(props.status)}</Text>
-              </View>
               
-              {/* Indicador de proximidade */}
+              {/* Indicador de proximidade - apenas ícone */}
               {proximidade && props.status !== 'DONE' && (
-                <View style={styles.proximidadeBadge}>
-                  <FontAwesomeIcon icon={faExclamationTriangle} size={10} color={colors.textLight} />
-                  <Text style={styles.proximidadeText}>Próximo</Text>
+                <View style={[styles.iconBadge, { backgroundColor: colors.primary }]}>
+                  <FontAwesomeIcon icon={faLocationDot} size={12} color={colors.textLight} />
                 </View>
               )}
-            </View>
-            <View style={[styles.priorityBadge, { backgroundColor: getPriorityColor(props.priority) }]}>
-              <Text style={styles.priorityText}>{getPriority(props.priority)}</Text>
+              
+              {/* Indicador de notificações - apenas ícone */}
+              {props.warning !== undefined && (
+                <View style={[styles.iconBadge, { 
+                  backgroundColor: isWarningEnabled() ? colors.primary : colors.textSecondary 
+                }]}>
+                  <FontAwesomeIcon 
+                    icon={isWarningEnabled() ? faBell : faBellSlash} 
+                    size={12} 
+                    color={colors.textLight} 
+                  />
+                </View>
+              )}
+              
+              {/* Indicador de prioridade - apenas ícone */}
+              <View style={[styles.iconBadge, { backgroundColor: getPriorityColor(props.priority) }]}>
+                <Text style={styles.priorityText}>{getPriority(getPriority(props.priority))}</Text>
+              </View>
             </View>
           </View>
 
@@ -501,10 +530,28 @@ export default function ToDoComponent(props: ToDoComponentProps) {
               )
             }
             
+            {/* Tipo da atividade */}
             <View style={styles.footerItem}>
               <FontAwesomeIcon icon={faInfoCircle} size={12} color={colors.textSecondary} />
               <Text style={styles.footerText}>{props.type}</Text>
             </View>
+            
+            {/* Status de notificações */}
+            {props.warning !== undefined && (
+              <View style={styles.footerItem}>
+                <FontAwesomeIcon 
+                  icon={isWarningEnabled() ? faBell : faBellSlash} 
+                  size={12} 
+                  color={isWarningEnabled() ? colors.primary : colors.textSecondary} 
+                />
+                <Text style={[
+                  styles.footerText, 
+                  isWarningEnabled() ? { color: colors.primary } : {}
+                ]}>
+                  {isWarningEnabled() ? "Notificações ativadas" : "Notificações desativadas"}
+                </Text>
+              </View>
+            )}
 
             {/* Botão para vincular ao calendário */}
             {props.status !== "DONE" && (
@@ -672,38 +719,16 @@ const styles = StyleSheet.create({
     marginRight: spacing.small,
     flex: 1,
   },
-  statusBadge: {
-    borderRadius: 4,
-    paddingHorizontal: spacing.small,
-    paddingVertical: spacing.xs,
-    marginTop: spacing.xs,
-  },
-  statusText: {
-    fontSize: fonts.size.xs,
-    color: colors.textLight,
-    fontWeight: fonts.weight.medium as any,
-  },
-  proximidadeBadge: {
-    backgroundColor: colors.primary,
+  iconBadge: {
     borderRadius: 4,
     paddingHorizontal: spacing.small,
     paddingVertical: spacing.xs,
     marginTop: spacing.xs,
     marginLeft: spacing.small,
-    flexDirection: 'row',
+    maxWidth: 200, // valor máximo que você quer permitir
+    height: 30,
+    justifyContent: 'center',
     alignItems: 'center',
-  },
-  proximidadeText: {
-    fontSize: fonts.size.xs,
-    color: colors.textLight,
-    fontWeight: fonts.weight.medium as any,
-    marginLeft: 4,
-  },
-  priorityBadge: {
-    borderRadius: 12,
-    paddingHorizontal: spacing.small,
-    paddingVertical: spacing.xs,
-    marginLeft: spacing.small,
   },
   priorityText: {
     fontSize: fonts.size.xs,

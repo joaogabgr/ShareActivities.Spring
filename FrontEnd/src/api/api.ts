@@ -107,6 +107,9 @@ export const links = {
             throw new Error("Sem conexão com a internet");
         }
         
+        // Converter explicitamente warning para booleano
+        const warningValue = data.warning === false || data.warning === "false" ? false : Boolean(data.warning);
+        
         const activityData = {
             name: data.name,
             description: data.description,
@@ -124,7 +127,8 @@ export const links = {
             photoUrl: data.photoUrl,
             documentUrl: data.documentUrl,
             photoName: data.photoName,
-            documentName: data.documentName
+            documentName: data.documentName,
+            warning: warningValue, // Usar o valor convertido
         };
         
         return api.post("/activities/create", activityData);
@@ -135,6 +139,9 @@ export const links = {
         if (!isConnected) {
             throw new Error("Sem conexão com a internet");
         }
+        
+        // Converter explicitamente warning para booleano
+        const warningValue = typeof data.warning === 'boolean' ? data.warning : Boolean(data.warning);
         
         const activityData = {
             id: data.id,
@@ -154,7 +161,8 @@ export const links = {
             photoUrl: data.photoUrl,
             documentUrl: data.documentUrl,
             photoName: data.photoName,
-            documentName: data.documentName
+            documentName: data.documentName,
+            warning: warningValue, // Usar o valor convertido
         };
         
         return api.put("/activities/update", activityData);
