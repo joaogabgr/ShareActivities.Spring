@@ -30,6 +30,7 @@ public class UpdateActivitiesDTO implements DTO {
     private String documentUrl;
     private String photoName;
     private String documentName;
+    private String warning;
 
     @Override
     public Activities toEntity(){
@@ -38,7 +39,6 @@ public class UpdateActivitiesDTO implements DTO {
         activities.setName(name);
         activities.setDescription(description);
         activities.setStatus(ActivitiesStatus.valueOf(status));
-        activities.setDateCreated(dateCreated);
         if (getDateCreated() != null) {
             activities.setDateCreated(dateCreated.withHour(0).withMinute(0).withSecond(0).withNano(0));
         }
@@ -53,6 +53,7 @@ public class UpdateActivitiesDTO implements DTO {
         activities.setImageName(photoName);
         activities.setDocumentName(documentName);
         activities.setLinkUrl(linkUrl);
+        activities.setWarning(Boolean.parseBoolean(warning));
         return activities;
     }
 

@@ -9,6 +9,7 @@ import {
   Image,
   Alert,
   Linking,
+  Switch,
 } from "react-native";
 import Header from "../../components/header/Header";
 import { colors, fonts, shadows, spacing } from "@/src/globalCSS";
@@ -30,6 +31,7 @@ import {
   faTimes,
   faChevronDown,
   faChevronUp,
+  faBell,
 } from "@fortawesome/free-solid-svg-icons";
 import { CreateActivities } from "@/src/types/Activities/CreateActivities";
 import { UpdateActivities } from "@/src/types/Activities/UpdateActivities";
@@ -63,6 +65,8 @@ export default function ActivityForm({ mode, activityData, onSuccess, familyId, 
   const [priority, setPriority] = useState<string>("MEDIUM");
   const [daysForRecover, setDaysForRecover] = useState(0);
   
+  const [warning, setWarning] = useState<boolean>(() => true);
+  
   // Estados para os novos campos
   const [documentUrl, setDocumentUrl] = useState<string | null>(null);
   const [documentName, setDocumentName] = useState<string | null>(null);
@@ -90,6 +94,17 @@ export default function ActivityForm({ mode, activityData, onSuccess, familyId, 
         setDateCreate(activityData.dateCreated ? new Date(activityData.dateCreated) : new Date());
         setNotes(activityData.notes || "");
         setLocation(activityData.location || "");
+        
+        // Tratar o warning corretamente, convertendo string para booleano
+        if (activityData.hasOwnProperty('warning')) {
+          // Converter explicitamente para booleano, tratando o caso de string "false"
+          const warningValue = activityData.warning === false || 
+                               activityData.warning === "false" ? 
+                               false : true;
+          setWarning(warningValue);
+        } else {
+          setWarning(true);
+        }
         
         // Configurar anexos se existirem
         setDocumentUrl(activityData.documentUrl || null);
@@ -132,12 +147,14 @@ export default function ActivityForm({ mode, activityData, onSuccess, familyId, 
         }
       } catch (error) {
         console.error("Erro ao processar dados da atividade:", error);
+        setWarning(true);
       } finally {
         setIsLoading(false);
       }
     } else {
-      // Se for criação, define a data como hoje
+      // Criar nova atividade, definindo os padrões
       setDateCreate(new Date());
+      setWarning(true);
       setIsLoading(false);
     }
   }, [mode, activityData, familyId]);
@@ -404,6 +421,7 @@ export default function ActivityForm({ mode, activityData, onSuccess, familyId, 
           documentName: documentNameServer,
           photoName: photoNameServer,
           linkUrl: formattedLinks,
+          warning: warning,
         };
 
         await apiLinks.createActivity(newActivity);
@@ -430,7 +448,9 @@ export default function ActivityForm({ mode, activityData, onSuccess, familyId, 
           documentName: documentNameServer,
           photoName: photoNameServer,
           linkUrl: formattedLinks,
+          warning: warning,
         };
+        
         await apiLinks.updateActivity(updateActivity);
       }
 
@@ -532,6 +552,25 @@ export default function ActivityForm({ mode, activityData, onSuccess, familyId, 
                     priority={priority}
                     onPriorityChange={setPriority}
                   />
+                  
+                  {/* Novo campo de notificação */}
+                  <View style={styles.toggleContainer}>
+                    <View style={styles.toggleLabelContainer}>
+                      <FontAwesomeIcon icon={faBell} size={16} color={colors.primary} />
+                      <Text style={styles.toggleLabel}>Receber avisos de vencimento</Text>
+                    </View>
+                    <Switch
+                      trackColor={{ false: colors.divider, true: colors.primary }}
+                      thumbColor={warning ? colors.textLight : colors.surface}
+                      ios_backgroundColor={colors.divider}
+                      key={warning ? 'switch-on' : 'switch-off'}
+                      onValueChange={() => {
+                        const newValue = !warning;
+                        setWarning(newValue);
+                      }}
+                      value={warning}
+                    />
+                  </View>
                 </View>
               )}
 
@@ -1061,5 +1100,23 @@ const styles = StyleSheet.create({
   },
   sectionContent: {
     paddingVertical: spacing.medium,
+  },
+  // Estilos para o novo toggle
+  toggleContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingVertical: spacing.medium,
+    borderBottomWidth: 1,
+    borderBottomColor: colors.divider,
+  },
+  toggleLabelContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  toggleLabel: {
+    marginLeft: spacing.small,
+    fontSize: fonts.size.medium,
+    color: colors.textPrimary,
   },
 });

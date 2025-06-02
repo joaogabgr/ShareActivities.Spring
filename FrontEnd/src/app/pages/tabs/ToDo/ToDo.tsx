@@ -4,15 +4,16 @@ import Header from "@/src/app/components/header/Header";
 import ToDoComponent from "@/src/app/components/ToDoComponent/ToDoComponent";
 import { AuthContext } from "@/src/contexts/AuthContext";
 import { colors, fonts, shadows, spacing } from "@/src/globalCSS";
-import { useCallback, useContext, useState } from "react";
-import { View, StyleSheet, Text, Alert, ScrollView, TouchableOpacity, ActivityIndicator } from "react-native";
+import { useCallback, useContext, useState, useEffect } from "react";
+import { View, StyleSheet, Text, Alert, ScrollView, TouchableOpacity, ActivityIndicator, Platform } from "react-native";
 import { FontAwesomeIcon } from "@fortawesome/react-native-fontawesome";
-import { faArrowLeft, faChevronDown, faChevronUp } from "@fortawesome/free-solid-svg-icons";
+import { faArrowLeft, faChevronDown, faChevronUp, faMicrophone } from "@fortawesome/free-solid-svg-icons";
 import { useRouter, useLocalSearchParams, useFocusEffect } from "expo-router";
 import AddActivitiesButton from "@/src/app/components/AddActivitiesButton/AddActivitiesButton";
 import { ReadActivities } from "@/src/types/Activities/ReadActivities";
 import React from "react";
 import ToDoGraphs from '@/src/app/components/ToDoGraphs/ToDoGraphs';
+import * as Speech from 'expo-speech';
 
 type SectionStatus = "PENDING" | "IN_PROGRESS" | "DONE";
 
@@ -28,6 +29,8 @@ export default function ToDo() {
         IN_PROGRESS: true,
         DONE: true
     });
+    const [listening, setListening] = useState<boolean>(false);
+    const [spokenText, setSpokenText] = useState<string>("");
     const authContext = useContext(AuthContext);
     const router = useRouter();
     const params = useLocalSearchParams();
@@ -53,6 +56,79 @@ export default function ToDo() {
             setLoading(false);
         }
     }, [authContext.user?.name, isGroupView, familyId]);
+
+    // Simulação do reconhecimento de voz usando Speech API integrada
+    const startVoiceRecognition = () => {
+        try {
+            setListening(true);
+            
+            // Simulação do reconhecimento de voz
+            // Em um caso real, você usaria uma API de Speech-to-Text
+            setTimeout(() => {
+                const simulatedText = "Comprar leite na quinta-feira";
+                processRecognizedText(simulatedText);
+                setListening(false);
+            }, 2000);
+            
+            // Indicação sonora de que o reconhecimento começou
+            Speech.speak("Ouvindo...", {
+                language: 'pt-BR',
+                pitch: 1.0,
+                rate: 0.8
+            });
+            
+        } catch (error) {
+            console.error("Erro ao iniciar reconhecimento de voz:", error);
+            setListening(false);
+            ErrorAlertComponent('Erro', 'Não foi possível iniciar o reconhecimento de voz');
+        }
+    };
+    
+    const processRecognizedText = (text: string) => {
+        setSpokenText(text);
+        console.log("Texto reconhecido:", text);
+        
+        // Exibe o texto que foi realmente reconhecido
+        Alert.alert(
+            "Texto reconhecido", 
+            text,
+            [
+                {
+                    text: "Cancelar",
+                    style: "cancel"
+                },
+                {
+                    text: "Criar atividade",
+                    onPress: () => createActivityFromVoice(text),
+                }
+            ]
+        );
+    };
+    
+    const createActivityFromVoice = (text: string) => {
+        // Aqui você enviaria o texto para o backend
+        console.log("Enviando para o backend:", text);
+        
+        // Exemplo de dados para criar uma atividade
+        const voiceData = {
+            description: text,
+            familyId: isGroupView ? familyId : undefined,
+            // Outros dados padrão, como status inicial (PENDING), prioridade, etc.
+        };
+        
+        // Implementação futura: criar atividade baseada no texto reconhecido
+        // await links.createActivity(voiceData);
+        // fetchActivities();
+        
+        // Confirmação audível
+        Speech.speak("Atividade criada com sucesso", {
+            language: 'pt-BR',
+            pitch: 1.0,
+            rate: 0.8
+        });
+        
+        Alert.alert("Atividade criada", "Uma nova atividade foi criada a partir do seu comando de voz.");
+    };
 
     const toggleSection = (status: SectionStatus) => {
         setExpandedSections(prev => ({
@@ -249,6 +325,24 @@ export default function ToDo() {
                     </ScrollView>
                 )}
             </View>
+            
+            <TouchableOpacity 
+                style={[styles.microphoneButton, listening && styles.listeningButton]} 
+                onPress={startVoiceRecognition}
+                disabled={listening}
+            >
+                <FontAwesomeIcon 
+                    icon={faMicrophone} 
+                    color={colors.textLight} 
+                    size={22} 
+                />
+                {listening && (
+                    <View style={styles.listeningIndicator}>
+                        <Text style={styles.listeningText}>Ouvindo...</Text>
+                    </View>
+                )}
+            </TouchableOpacity>
+            
             <AddActivitiesButton 
                 familyId={isGroupView ? familyId : undefined} 
                 familyName={isGroupView ? familyName : undefined}
@@ -373,5 +467,34 @@ const styles = StyleSheet.create({
         fontSize: fonts.size.medium,
         color: colors.textSecondary,
         textAlign: 'center',
+    },
+    microphoneButton: {
+        position: 'absolute',
+        right: 20,
+        bottom: 100, // Posicionar acima do botão de adicionar
+        width: 56,
+        height: 56,
+        borderRadius: 28,
+        backgroundColor: colors.primary,
+        justifyContent: 'center',
+        alignItems: 'center',
+        ...shadows.medium,
+    },
+    listeningButton: {
+        backgroundColor: colors.statusInProgress,
+    },
+    listeningIndicator: {
+        position: 'absolute',
+        top: -40,
+        backgroundColor: colors.surface,
+        paddingHorizontal: spacing.medium,
+        paddingVertical: spacing.small,
+        borderRadius: 16,
+        ...shadows.small,
+    },
+    listeningText: {
+        color: colors.textPrimary,
+        fontSize: fonts.size.small,
+        fontWeight: fonts.weight.medium as any,
     },
 });

@@ -14,4 +14,7 @@ public interface ActivitiesRepository extends JpaRepository<Activities, String> 
 
     @Query("SELECT a FROM Activities a WHERE a.family.id = :familyId")
     List<Activities> findByFamilyId(@Param("familyId") String familyId);
+
+    List<Activities> findAllByWarningTrue();
+
 }

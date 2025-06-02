@@ -76,7 +76,6 @@ export default function Families() {
       // Verifica se precisa atualizar os dados baseado no parâmetro da rota
       const shouldUpdate = params.updated === "true";
       if (shouldUpdate && userEmail && !updatedProcessed.current) {
-        console.log("Atualizando famílias...");
         updatedProcessed.current = true;
         fetchFamilies(userEmail);
       } else if (params.updated === "false") {

@@ -51,6 +51,9 @@ public class Activities {
     @Enumerated(EnumType.STRING)
     private PriorityActivities priority;
 
+    @Column()
+    private boolean warning;
+
     @ManyToOne
     @JoinColumn(name = "user_id")
     private User user;

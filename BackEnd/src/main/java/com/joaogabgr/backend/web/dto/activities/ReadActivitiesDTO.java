@@ -25,4 +25,5 @@ public class ReadActivitiesDTO {
     private String documentUrl;
     private String photoName;
     private String documentName;
+    private String warning;
 }
