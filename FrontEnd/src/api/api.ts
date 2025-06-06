@@ -12,7 +12,7 @@ interface ErrorResponse {
 
 // Configuração base da API
 export const api = axios.create({
-    baseURL: "http://192.168.1.101:8080",
+    baseURL: "http://192.168.1.107:8080",
     timeout: 10000, // 10 segundos
     headers: {
         'Content-Type': 'application/json',
@@ -174,6 +174,18 @@ export const links = {
             throw new Error("Sem conexão com a internet");
         }
         return api.put("/activities/changeStatus", { id, status });
+    },
+
+    // Confirmação de conclusão de atividade em grupo
+    confirmGroupDone: async (id: string, userEmail: string) => {
+        const isConnected = await checkInternetConnection();
+        if (!isConnected) {
+            throw new Error("Sem conexão com a internet");
+        }
+        return await api.post("/activities/confirmGroupDone", {
+            id,
+            userEmail
+        });
     },
     //#endregion
     

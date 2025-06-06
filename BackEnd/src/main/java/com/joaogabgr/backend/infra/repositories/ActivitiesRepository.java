@@ -17,4 +17,7 @@ public interface ActivitiesRepository extends JpaRepository<Activities, String> 
 
     List<Activities> findAllByWarningTrue();
 
+    @Query("SELECT a FROM Activities a WHERE a.id = :id AND a.isConfirmed = false")
+    Activities findUnconfirmedById(@Param("id") String id);
+
 }

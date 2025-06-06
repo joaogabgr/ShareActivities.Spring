@@ -28,6 +28,7 @@ public class ConvertActivitiesToReadDTO {
         readActivitiesDTO.setPhotoName(activities.getImageName());
         readActivitiesDTO.setDocumentName(activities.getDocumentName());
         readActivitiesDTO.setWarning(String.valueOf(activities.isWarning()));
+        readActivitiesDTO.setConfirmed(activities.isConfirmed());
 
         // Converter latitude e longitude para String no formato "lat,lng" e obter endereço
         if (activities.getLatitude() != null && activities.getLongitude() != null) {

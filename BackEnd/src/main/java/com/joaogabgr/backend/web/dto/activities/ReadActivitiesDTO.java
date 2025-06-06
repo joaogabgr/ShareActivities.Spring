@@ -26,4 +26,5 @@ public class ReadActivitiesDTO {
     private String photoName;
     private String documentName;
     private String warning;
+    private boolean isConfirmed;
 }

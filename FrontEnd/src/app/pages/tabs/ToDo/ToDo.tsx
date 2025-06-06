@@ -60,7 +60,6 @@ export default function ToDo() {
   const familyName = params.familyName as string;
   const isGroupView = !!familyId;
 
-  // Limpar gravação ao desmontar componente
   useEffect(() => {
     return () => {
       if (recording) {
@@ -84,16 +83,13 @@ export default function ToDo() {
 
   async function startRecording() {
     try {
-      // --- CLEANUP PREVIOUS RECORDING IF EXISTS ---
       if (recording) {
         try {
           await recording.stopAndUnloadAsync();
         } catch (cleanupErr) {
-          // Ignore errors during cleanup
         }
         setRecording(null);
         setIsRecordingPrepared(false);
-        // Wait a bit to let system release resources
         await new Promise((resolve) => setTimeout(resolve, 300));
       }
 
@@ -275,7 +271,6 @@ export default function ToDo() {
     try {
       let response;
       if (isGroupView) {
-        // Usar a rota de grupo se estivermos visualizando tarefas de um grupo
         response = await links.readGroupActivities(familyId);
       } else {
         // Usar a rota normal para tarefas pessoais

@@ -64,4 +64,20 @@ public class ChangeStatusImpl implements ChangeStatusUseCase {
             pushNotificationService.sendPushNotification(expoToken, title, message);
         }
     }
+
+    public String confirmGroupDone(String id, String userEmail) throws SystemContextException {
+        Activities activity = activitiesRepository.findById(id)
+                .orElseThrow(() -> new SystemContextException("Atividade não encontrada"));
+        if (activity.getFamily() == null) {
+            throw new SystemContextException("Apenas atividades de grupo podem ser confirmadas");
+        }
+        if (activity.isConfirmed()) {
+            throw new SystemContextException("Ativida de já confirmada");
+        }
+        activity.setConfirmed(true);
+        activitiesRepository.save(activity);
+        // Notifica membros do grupo se desejar
+        sendNotificationForFamily(activity);
+        return "Atividade de grupo confirmada com sucesso";
+    }
 }

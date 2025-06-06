@@ -44,16 +44,18 @@ import {
   faLocationDot,
   faCheck,
 } from "@fortawesome/free-solid-svg-icons";
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useContext } from "react";
 import { useLocation } from "@/src/contexts/LocationContext";
 import { calcularDistancia, extrairCoordenadas, formatarDistancia } from "@/src/utils/distanceUtils";
 import * as Calendar from 'expo-calendar';
+import { AuthContext } from "@/src/contexts/AuthContext";
 
 interface ToDoComponentProps extends ReadActivities {
   onDelete: (id: string) => void;
   onEdit: (id: string) => void;
   onStatusChange: () => void;
   familyName?: string;
+  familyId?: string; // Adicionado para uso em atividades de grupo
 }
 
 export default function ToDoComponent(props: ToDoComponentProps) {
@@ -62,6 +64,7 @@ export default function ToDoComponent(props: ToDoComponentProps) {
   const [proximidade, setProximidade] = useState(false);
   const [modalVisible, setModalVisible] = useState(false);
   const [calendarPermission, setCalendarPermission] = useState<boolean>(false);
+  const authContext = useContext(AuthContext);
 
   // Função auxiliar para converter o warning para booleano
   const isWarningEnabled = () => {
@@ -323,6 +326,39 @@ export default function ToDoComponent(props: ToDoComponentProps) {
     </View>
   );
 
+  // Verifica se é uma atividade de grupo
+  const isGroupActivity = !!props.familyName || !!props.familyId;
+  // Verifica se está concluída e não confirmada
+  const canShowConfirmButton = isGroupActivity && props.status === 'DONE' && !props.confirmed;
+  // Verifica se já está confirmada
+  const isConfirmed = !!props.confirmed;
+
+  // Função para confirmar conclusão
+  const handleConfirmDone = async () => {
+    try {
+      if (!authContext.user?.name) {
+        ErrorAlertComponent('Erro', 'Usuário não autenticado.');
+        return;
+      }
+      await links.confirmGroupDone(props.id, authContext.user.name);
+      // Atualiza o status local para refletir a confirmação imediatamente
+      if (props.onStatusChange) props.onStatusChange();
+      setShowConfirmButton(false); // Esconde o botão imediatamente
+      setConfirmedLocal(true); // Esconde os swipes imediatamente
+    } catch (error) {
+      ErrorAlertComponent('Erro', 'Não foi possível confirmar a conclusão.');
+    }
+  };
+
+  // Estado local para esconder botões após confirmação
+  const [showConfirmButton, setShowConfirmButton] = useState(canShowConfirmButton);
+  const [confirmedLocal, setConfirmedLocal] = useState(isConfirmed);
+
+  useEffect(() => {
+    setShowConfirmButton(canShowConfirmButton);
+    setConfirmedLocal(isConfirmed);
+  }, [canShowConfirmButton, isConfirmed]);
+
   const renderLeftActions = () => {
     const getAvailableStatuses = () => {
       switch (props.status) {
@@ -352,6 +388,11 @@ export default function ToDoComponent(props: ToDoComponentProps) {
         props.onStatusChange();
       } catch (error) {}
     };
+
+    // Bloqueia alteração de status se já estiver confirmada
+    if (isGroupActivity && props.status === 'DONE' && confirmedLocal) {
+      return null;
+    }
 
     return (
       <View style={styles.swipeActionsContainer}>
@@ -627,6 +668,17 @@ export default function ToDoComponent(props: ToDoComponentProps) {
               >
                 <FontAwesomeIcon icon={faCalendarPlus} size={14} color={colors.primary} />
                 <Text style={styles.calendarButtonText}>Vincular ao Calendário</Text>
+              </TouchableOpacity>
+            )}
+
+            {/* Botão de confirmação para atividades de grupo concluídas e não confirmadas */}
+            {showConfirmButton && (
+              <TouchableOpacity
+                style={[styles.calendarButton, { backgroundColor: colors.primary, marginTop: 8 }]}
+                onPress={handleConfirmDone}
+              >
+                <FontAwesomeIcon icon={faCheck} size={14} color={colors.textLight} />
+                <Text style={[styles.calendarButtonText, { color: colors.textLight }]}>Confirmar conclusão</Text>
               </TouchableOpacity>
             )}
 

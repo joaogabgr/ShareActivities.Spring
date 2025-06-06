@@ -19,13 +19,14 @@ public class GeminiClient {
         try {
             String prompt = """
                 Você receberá um texto em linguagem natural, como uma transcrição de voz. Seu objetivo é extrair o máximo de informações e preencher os campos da DTO abaixo com base nesse conteúdo.
-                
                 ⚠️ Instruções importantes:
                 - Você deve **sempre tentar preencher os campos `type`, `name` e `description`**, mesmo que precise inferir a partir do texto.
                 - Se o texto não contiver informações suficientes, **use valores padrão**:
                     - `type`: "outros"
                     - `name`: "Atividade sem nome"
                     - `description`: "Descrição não fornecida"
+                    - `status`: "PENDING", "IN_PROGRESS" ou "DONE" (use "PENDING" se não houver informações claras)
+                    - `priority`: "LOW", "MEDIUM" ou "HIGH" (use "MEDIUM" se não houver informações claras)
                 - Se o texto não contiver informações sobre `dateCreated`, use a data atual.
                 - As datas devem estar no formato americano: **MM/dd** ou **MM/dd/yyyy** (ex: "12/24" ou "12/24/2025").
                 - Retorne **apenas um JSON válido** — **sem** explicações, **sem** comentários, **sem** blocos markdown (como ```json).
@@ -35,19 +36,11 @@ public class GeminiClient {
                 - description
                 - status
                 - priority
-                - userId
-                - familyId
                 - type
-                - dateCreated
                 - dateExpire
                 - daysForRecover
                 - notes
                 - location
-                - linkUrl
-                - photoUrl
-                - documentUrl
-                - photoName
-                - documentName
                 - warning
                 
                 Texto de origem:

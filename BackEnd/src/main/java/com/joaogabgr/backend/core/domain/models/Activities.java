@@ -14,7 +14,7 @@ import java.util.Map;
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-public class Activities {
+public class  Activities {
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
     private String id;
@@ -53,6 +53,9 @@ public class Activities {
 
     @Column()
     private boolean warning;
+
+    @Column(columnDefinition = "boolean default false")
+    private boolean isConfirmed;
 
     @ManyToOne
     @JoinColumn(name = "user_id")

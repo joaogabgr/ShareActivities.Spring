@@ -20,4 +20,5 @@ export type ReadActivities = {
     photoName?: string;
     documentName?: string;
     warning?: boolean | string;
+    confirmed?: boolean;
 };

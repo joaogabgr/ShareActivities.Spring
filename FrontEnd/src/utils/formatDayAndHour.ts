@@ -7,7 +7,7 @@ export const formatDayAndHour = (date: string | Date): string => {
     const hours = dateObject.getHours().toString().padStart(2, '0');
     const minutes = dateObject.getMinutes().toString().padStart(2, '0');
 
-    return `Criado no dia ${day}/${month}/${year} as ${hours}:${minutes}`;
+    return `Criado no dia ${day}/${month}/${year}`;
 };
 
 export const formatDay = (date: string | Date): string => {
