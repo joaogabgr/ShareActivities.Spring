@@ -50,9 +50,12 @@ interface ActivityFormProps {
   onSuccess?: () => void;
   familyId?: string; // ID da família quando estiver criando uma atividade para um grupo
   familyName?: string; // Nome da família quando estiver criando uma atividade para um grupo
+  initialData?: {
+    [key: string]: any;
+  };
 }
 
-export default function ActivityForm({ mode, activityData, onSuccess, familyId, familyName }: ActivityFormProps) {
+export default function ActivityForm({ mode, activityData, onSuccess, familyId, familyName, initialData }: ActivityFormProps) {
   const router = useRouter();
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
@@ -64,7 +67,6 @@ export default function ActivityForm({ mode, activityData, onSuccess, familyId, 
   const [dateCreate, setDateCreate] = useState<Date | null>(new Date());
   const [priority, setPriority] = useState<string>("MEDIUM");
   const [daysForRecover, setDaysForRecover] = useState(0);
-  
   const [warning, setWarning] = useState<boolean>(() => true);
   
   // Estados para os novos campos
@@ -151,13 +153,57 @@ export default function ActivityForm({ mode, activityData, onSuccess, familyId, 
       } finally {
         setIsLoading(false);
       }
+    } else if (mode === "create" && initialData) {
+      setTitle(initialData.name || "");
+      setDescription(initialData.description || "");
+      setStatus(initialData.status || "PENDING");
+      setType(initialData.type || "");
+      setPriority(initialData.priority || "MEDIUM");
+      setNotes(initialData.notes || "");
+      setLocation(initialData.location || "");
+      setWarning(
+        initialData.warning === false || initialData.warning === "false"
+          ? false
+          : true
+      );
+      // Preenche data de expiração se vier como string ISO, Date ou MM/DD
+      if (initialData.dateExpire) {
+        let expireDate: Date | null = null;
+        if (typeof initialData.dateExpire === 'string') {
+          // Trata MM/DD
+          if (/^\d{1,2}\/\d{1,2}$/.test(initialData.dateExpire)) {
+            const [month, day] = initialData.dateExpire.split('/').map(Number);
+            const now = new Date();
+            let year = now.getFullYear();
+            const tempDate = new Date(year, month - 1, day, 12, 0, 0, 0);
+            if (tempDate < now) year++;
+            expireDate = new Date(year, month - 1, day, 12, 0, 0, 0);
+          } else {
+            const tryDate = new Date(initialData.dateExpire);
+            expireDate = isNaN(tryDate.getTime()) ? null : tryDate;
+          }
+        } else if (initialData.dateExpire instanceof Date) {
+          expireDate = initialData.dateExpire;
+        }
+        setExpirationDate(expireDate);
+      } else {
+        setExpirationDate(null);
+      }
+      // Preenche dias para recuperar
+      if (initialData.daysForRecover || initialData.daysforrecover) {
+        setDaysForRecover(Number(initialData.daysForRecover || initialData.daysforrecover) || 0);
+      } else {
+        setDaysForRecover(0);
+      }
+      setDateCreate(new Date());
+      setIsLoading(false);
     } else {
       // Criar nova atividade, definindo os padrões
       setDateCreate(new Date());
       setWarning(true);
       setIsLoading(false);
     }
-  }, [mode, activityData, familyId]);
+  }, [mode, activityData, familyId, initialData]);
 
   // Funções para lidar com anexos
   const selectDocument = async () => {
@@ -563,7 +609,6 @@ export default function ActivityForm({ mode, activityData, onSuccess, familyId, 
                       trackColor={{ false: colors.divider, true: colors.primary }}
                       thumbColor={warning ? colors.textLight : colors.surface}
                       ios_backgroundColor={colors.divider}
-                      key={warning ? 'switch-on' : 'switch-off'}
                       onValueChange={() => {
                         const newValue = !warning;
                         setWarning(newValue);

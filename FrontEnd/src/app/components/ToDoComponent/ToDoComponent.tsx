@@ -10,6 +10,8 @@ import {
   ScrollView,
   Pressable,
   Platform,
+  Animated,
+  Easing,
 } from "react-native";
 import { colors, fonts, shadows, spacing } from "@/src/globalCSS";
 import { ReadActivities } from "@/src/types/Activities/ReadActivities";
@@ -40,6 +42,7 @@ import {
   faBell,
   faBellSlash,
   faLocationDot,
+  faCheck,
 } from "@fortawesome/free-solid-svg-icons";
 import React, { useEffect, useState } from "react";
 import { useLocation } from "@/src/contexts/LocationContext";
@@ -111,8 +114,38 @@ export default function ToDoComponent(props: ToDoComponentProps) {
         setCalendarPermission(true);
       }
 
-      const defaultCalendar = await Calendar.getDefaultCalendarAsync();
-      
+      let calendarId;
+      if (Platform.OS === 'android') {
+        // Buscar um calendário local ou criar um se não existir
+        const calendars = await Calendar.getCalendarsAsync(Calendar.EntityTypes.EVENT);
+        const localCalendar = calendars.find(
+          (cal) => cal.accessLevel === Calendar.CalendarAccessLevel.OWNER && cal.allowsModifications
+        );
+        if (localCalendar) {
+          calendarId = localCalendar.id;
+        } else {
+          // Busca um source válido
+          let source = calendars.find(cal => cal.source && cal.source.isLocalAccount)?.source;
+          if (!source && calendars.length > 0) {
+            source = calendars[0].source;
+          }
+          const newCalendar = await Calendar.createCalendarAsync({
+            title: 'ShareActivities',
+            color: '#2196F3',
+            entityType: Calendar.EntityTypes.EVENT,
+            source: source,
+            name: 'ShareActivities',
+            ownerAccount: 'personal',
+            accessLevel: Calendar.CalendarAccessLevel.OWNER,
+          });
+          calendarId = newCalendar;
+        }
+      } else {
+        // iOS: usa o calendário padrão
+        const defaultCalendar = await Calendar.getDefaultCalendarAsync();
+        calendarId = defaultCalendar.id;
+      }
+
       const detalhesEvento = [
         // Informações básicas
         '📋 Informações da Atividade:',
@@ -181,8 +214,7 @@ export default function ToDoComponent(props: ToDoComponentProps) {
         recurrenceRule: recurrenceRule,
       };
 
-      const eventoId = await Calendar.createEventAsync(defaultCalendar.id, evento);
-      
+      await Calendar.createEventAsync(calendarId, evento);
       Alert.alert(
         'Sucesso',
         'Atividade vinculada ao calendário com sucesso!' + (recurrenceRule ? '' : ''),
@@ -224,53 +256,90 @@ export default function ToDoComponent(props: ToDoComponentProps) {
     setProximidade(distanciaCalculada < 100);
   };
 
-  const renderRightActions = () => {
-    return (
-      <View style={{ flexDirection: "row" }}>
-        <TouchableOpacity
-          style={[styles.actionButton, styles.editButton]}
-          onPress={() => props.onEdit(props.id)}
-        >
-          <FontAwesomeIcon icon={faEdit} size={20} color={colors.textLight} />
-          <Text style={styles.actionText}>Editar</Text>
-        </TouchableOpacity>
+  // --- MELHORIA UX SWIPE BUTTONS ---
+  const SwipeActionButton = ({ style, onPress, icon, text, color }: any) => {
+    const [pressed, setPressed] = React.useState(false);
+    const scale = React.useRef(new Animated.Value(1)).current;
 
+    const handlePressIn = () => {
+      setPressed(true);
+      Animated.timing(scale, {
+        toValue: 0.93,
+        duration: 90,
+        useNativeDriver: true,
+        easing: Easing.out(Easing.quad),
+      }).start();
+    };
+    const handlePressOut = () => {
+      setPressed(false);
+      Animated.timing(scale, {
+        toValue: 1,
+        duration: 90,
+        useNativeDriver: true,
+        easing: Easing.out(Easing.quad),
+      }).start();
+    };
+
+    return (
+      <Animated.View style={{
+        transform: [{ scale }],
+        width: '100%',
+      }}>
         <TouchableOpacity
-          style={[styles.actionButton, styles.deleteButton]}
-          onPress={() => props.onDelete(props.id)}
+          style={[
+            styles.swipeActionButton,
+            { backgroundColor: color },
+            style,
+            pressed && { opacity: 0.85 },
+          ]}
+          onPress={onPress}
+          activeOpacity={0.8}
+          onPressIn={handlePressIn}
+          onPressOut={handlePressOut}
         >
-          <FontAwesomeIcon icon={faTrash} size={20} color={colors.textLight} />
-          <Text style={styles.actionText}>Excluir</Text>
+          <FontAwesomeIcon icon={icon} size={32} color={colors.textLight} style={{ marginBottom: 2 }} />
+          <Text style={styles.swipeActionText}>{text}</Text>
         </TouchableOpacity>
-      </View>
+      </Animated.View>
     );
   };
+
+  const renderRightActions = () => (
+    <View style={styles.swipeActionsContainer}>
+      <SwipeActionButton
+        style={{}}
+        color={colors.primary}
+        icon={faEdit}
+        text="Editar"
+        onPress={() => props.onEdit(props.id)}
+      />
+      <SwipeActionButton
+        style={{}}
+        color={colors.error}
+        icon={faTrash}
+        text="Excluir"
+        onPress={() => props.onDelete(props.id)}
+      />
+    </View>
+  );
 
   const renderLeftActions = () => {
     const getAvailableStatuses = () => {
       switch (props.status) {
         case "DONE":
           return [
-            { label: "Pendente", value: "PENDING", color: colors.statusPending },
-            {
-              label: "Em Progresso",
-              value: "IN_PROGRESS",
-              color: colors.statusInProgress,
-            },
+            { label: "Pendente", value: "PENDING", color: colors.statusPending, icon: faExclamationTriangle },
+            { label: "Em Progresso", value: "IN_PROGRESS", color: colors.statusInProgress, icon: faClock },
           ];
         case "IN_PROGRESS":
           return [
-            { label: "Pendente", value: "PENDING", color: colors.statusPending },
-            { label: "Concluído", value: "DONE", color: colors.statusDone },
+            { label: "Pendente", value: "PENDING", color: colors.statusPending, icon: faExclamationTriangle },
+            { label: "Concluído", value: "DONE", color: colors.statusDone, icon: faCheck },
           ];
         case "PENDING":
           return [
-            {
-              label: "Em Progresso",
-              value: "IN_PROGRESS",
-              color: colors.statusInProgress,
-            },
-            { label: "Concluído", value: "DONE", color: colors.statusDone },
+            { label: "Em Progresso", value: "IN_PROGRESS", color: colors.statusInProgress, icon: faClock },
+            { label: "Concluído", value: "DONE", color: colors.statusDone, icon: faCheck },
           ];
         default:
           return [];
@@ -281,23 +350,20 @@ export default function ToDoComponent(props: ToDoComponentProps) {
       try {
         await links.updateActivityStatus(props.id, newStatus);
         props.onStatusChange();
-      } catch (error) {
-      }
+      } catch (error) {}
     };
 
     return (
-      <View style={{ flexDirection: "row" }}>
+      <View style={styles.swipeActionsContainer}>
         {getAvailableStatuses().map((statusOption) => (
-          <TouchableOpacity
+          <SwipeActionButton
             key={statusOption.value}
-            style={[
-              styles.actionButton,
-              { backgroundColor: statusOption.color },
-            ]}
+            style={{}}
+            color={statusOption.color}
+            icon={statusOption.icon}
+            text={statusOption.label}
             onPress={() => handleStatusChange(statusOption.value)}
-          >
-            <Text style={styles.actionText}>{statusOption.label}</Text>
-          </TouchableOpacity>
+          />
         ))}
       </View>
     );
@@ -955,5 +1021,44 @@ const styles = StyleSheet.create({
     color: colors.primary,
     fontWeight: fonts.weight.medium as any,
     marginLeft: spacing.xs,
+  },
+  // --- MELHORIA UX SWIPE BUTTONS ---
+  swipeActionsContainer: {
+    flexDirection: 'column',
+    justifyContent: 'center',
+    alignItems: 'center',
+    height: '100%',
+    backgroundColor: 'transparent',
+    paddingVertical: 12,
+    paddingHorizontal: 4,
+    minWidth: 90,
+  },
+  swipeActionButton: {
+    width: 90,
+    height: 70,
+    marginVertical: 8,
+    borderRadius: 18,
+    justifyContent: 'center',
+    alignItems: 'center',
+    ...Platform.select({
+      android: {
+        elevation: 3,
+      },
+      ios: {
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: 2 },
+        shadowOpacity: 0.18,
+        shadowRadius: 6,
+      },
+      default: {},
+    }),
+  },
+  swipeActionText: {
+    color: colors.textLight,
+    fontSize: fonts.size.xs,
+    marginTop: 2,
+    fontWeight: fonts.weight.medium as any,
+    textAlign: 'center',
+    letterSpacing: 0.2,
   },
 });

@@ -12,7 +12,7 @@ interface ErrorResponse {
 
 // Configuração base da API
 export const api = axios.create({
-    baseURL: "http://192.168.1.103:8080",
+    baseURL: "http://192.168.1.101:8080",
     timeout: 10000, // 10 segundos
     headers: {
         'Content-Type': 'application/json',

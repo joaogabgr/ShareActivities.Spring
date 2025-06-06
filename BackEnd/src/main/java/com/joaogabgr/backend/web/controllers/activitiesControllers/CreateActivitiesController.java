@@ -1,6 +1,7 @@
 package com.joaogabgr.backend.web.controllers.activitiesControllers;
 
 import com.joaogabgr.backend.application.services.activities.CreateActivitiesImpl;
+import com.joaogabgr.backend.application.services.activities.GeminiClient;
 import com.joaogabgr.backend.web.dto.activities.CreateActivitiesDTO;
 import com.joaogabgr.backend.web.dto.web.ResponseModelDTO;
 import com.joaogabgr.backend.web.exeption.SystemContextException;
@@ -18,6 +19,9 @@ public class CreateActivitiesController {
     @Autowired
     private CreateActivitiesImpl createActivitiesImpl;
 
+    @Autowired
+    private GeminiClient geminiClient;
+
     @PostMapping("/create")
     public ResponseEntity<ResponseModelDTO> createActivities(@RequestBody CreateActivitiesDTO createActivitiesDTO) throws SystemContextException {
        try {
@@ -26,5 +30,18 @@ public class CreateActivitiesController {
          } catch (Exception e) {
               throw new SystemContextException(e.getMessage());
        }
+    }
+
+    @PostMapping("/create/gemini")
+    public ResponseEntity<ResponseModelDTO> createActivitiesWithGemini(@RequestBody String textoTranscrito) throws SystemContextException {
+        try {
+            String jsonResponse = geminiClient.execute(textoTranscrito);
+            if (jsonResponse == null) {
+                throw new SystemContextException("Erro ao processar o texto com Gemini");
+            }
+            return ResponseEntity.ok(new ResponseModelDTO(jsonResponse));
+        } catch (Exception e) {
+            throw new SystemContextException(e.getMessage());
+        }
     }
 }
